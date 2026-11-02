@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>redWalls W.I.P V.13 by coolguy82</title>
+<style>
+  body{margin:0;overflow:hidden;background:#000;font-family:monospace;color:#fff}
+  canvas{display:block;width:100vw;height:100vh;image-rendering:pixelated}
+  .hide{display:none!important}
+  #hud{position:fixed;inset:0;pointer-events:none;text-shadow:1px 1px 2px #000}
+  #hud button{pointer-events:auto}
+  #tl{position:absolute;top:8px;left:8px;width:330px}
+  .bar{position:relative;height:14px;background:rgba(0,0,0,.55);border:1px solid #000;margin-bottom:4px}
+  .bar i{display:block;height:100%;transition:background .2s}
+  .bar span{position:absolute;inset:0;text-align:center;font-size:11px;line-height:14px}
+  .bar.st{height:7px}
+  #chatLog{display:flex;flex-direction:column;justify-content:flex-end;max-height:150px;overflow:hidden;margin-top:8px;font-size:13px}
+  .msg{background:rgba(0,0,0,.4);padding:1px 5px;word-break:break-word;opacity:1;transition:opacity 1s}
+  .msg.fade{opacity:0}
+  #chat.open .msg.fade{opacity:1}
+  .msg .nm{color:#ffd65a}.msg.sys{color:#9fd8ff}
+  .msg.cmd,.msg.cmd .nm{color:#7cff9b}
+  #chatInput{display:none;pointer-events:auto;width:100%;box-sizing:border-box;margin-top:3px;background:rgba(0,0,0,.7);color:#fff;border:1px solid #888;font:13px monospace;padding:4px 6px;outline:none}
+  #chat.open #chatInput{display:block}
+  #chatInput.cmd{color:#7cff9b;border-color:#7cff9b}
+  #tr{position:absolute;top:8px;right:8px;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+  #fps{font-size:12px;opacity:.9}
+  #lb{background:rgba(0,0,0,.45);padding:4px 6px;font-size:11px;min-width:170px}
+  .lbr{display:grid;grid-template-columns:1fr 50px 30px 46px;gap:6px;padding:1px 0}
+  .lbr.p{grid-template-columns:1fr 50px 30px 46px 52px}
+  .lbr.h{opacity:.7;border-bottom:1px solid #666;margin-bottom:2px}
+  .lbr.me{color:#ffd65a}.lbr span:nth-child(n+3){text-align:right}
+  #stats{background:rgba(0,0,0,.55);padding:5px 7px;font-size:10px;line-height:1.35;white-space:pre;text-align:left}
+  #info{position:absolute;left:8px;bottom:8px;font-size:11px;opacity:.8}
+  #br{position:absolute;right:8px;bottom:8px;text-align:right;font-size:10px;opacity:.75;line-height:1.4;max-width:32vw}
+  #ver{margin-top:3px;opacity:.9}
+  #lockIcon{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:34px;height:34px}
+  #dead{position:absolute;inset:0;background:rgba(130,0,0,.4);display:flex;align-items:center;justify-content:center;flex-direction:column;font-size:42px;font-weight:bold;letter-spacing:3px}
+  #dead small{font-size:14px;font-weight:normal;letter-spacing:1px;margin-top:6px;opacity:.85}
+  /* hotbar + backpack: simple grey squares */
+  #hotbar{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:4px;padding:3px;pointer-events:auto}
+  .slot{position:relative;width:54px;height:54px;box-sizing:border-box;background:#4a4a4a;border:2px solid #777;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;color:#ddd;cursor:pointer;text-shadow:none;user-select:none}
+  .slot[draggable=true]{cursor:grab}
+  .slot:hover{background:#585858}
+  .slot.sel{border-color:#ffd65a;background:#5c5c5c}
+  .slot .num{position:absolute;top:1px;left:3px;opacity:.8}
+  .slot img{width:28px;height:28px;image-rendering:pixelated;pointer-events:none}
+  #pack{position:absolute;bottom:72px;left:50%;transform:translateX(-50%);width:262px;box-sizing:border-box;background:#3a3a3a;border:2px solid #777;padding:8px;pointer-events:auto;text-shadow:none}
+  #pack .ph{text-align:center;font-size:12px;margin-bottom:2px}
+  #pack small{display:block;text-align:center;opacity:.6;font-size:9px;margin-bottom:6px}
+  #packGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+  #packGrid .slot{width:100%}
+  /* quick chat */
+  #qcBtn{position:absolute;left:8px;bottom:28px;background:rgba(0,0,0,.55);color:#fff;border:1px solid #888;font:11px monospace;padding:3px 8px;cursor:pointer}
+  #qc{position:absolute;left:8px;bottom:56px;width:240px;background:#333;border:2px solid #777;padding:6px;pointer-events:auto;text-shadow:none}
+  #qcTitle{font-size:11px;opacity:.8;margin-bottom:4px}
+  #qcList button,#qc>button{display:block;width:100%;text-align:left;background:#4a4a4a;color:#fff;border:1px solid #666;font:12px monospace;padding:4px 6px;margin-bottom:3px;cursor:pointer}
+  #qcList button:hover,#qc>button:hover{background:#666}
+  /* safe chat: rectangular cascading preset-message menu under the chat box */
+  #sc{position:relative;margin-top:4px}
+  #scBtn{pointer-events:auto;background:#24467f;color:#fff;border:2px solid #7fb0ff;border-radius:0;font:bold 12px monospace;padding:3px 10px;cursor:pointer}
+  #scBtn:hover{background:#2f5cae}
+  #scMenu{position:absolute;top:100%;left:0;display:flex;align-items:flex-start;gap:2px;margin-top:2px;pointer-events:auto;z-index:5}
+  .scCol{display:flex;flex-direction:column;gap:2px}
+  .scCol button{min-width:150px;text-align:left;background:#1d3b6f;color:#fff;border:2px solid #6aa0ff;border-radius:0;font:12px monospace;padding:4px 8px;cursor:pointer;white-space:nowrap;text-shadow:none}
+  .scCol button:hover{background:#2f5cae}.scCol button.sel{background:#3d73d6;border-color:#cfe2ff}
+  /* settings */
+  #settings{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:10}
+  .card{background:#1b1b22;border:2px solid #a33;padding:18px 22px;width:360px;max-height:92vh;overflow:auto;box-shadow:0 0 30px #000}
+  .card h2{margin:0 0 10px;color:#e55}
+  .tabs{display:flex;gap:3px;margin-bottom:8px}
+  .card .tabs button{margin:0;padding:6px 2px;font-size:11px;background:#333}
+  .card .tabs button:hover{background:#555}
+  .card .tabs button.on{background:#a33}
+  .tab{min-height:230px}
+  .card label{display:flex;justify-content:space-between;align-items:center;margin:9px 0;font-size:13px;gap:10px}
+  .card input[type=range]{width:130px}
+  .card select{background:#333;color:#fff;border:1px solid #666;padding:2px}
+  .card button{width:100%;margin-top:10px;padding:8px;background:#a33;color:#fff;border:0;font:bold 14px monospace;cursor:pointer}
+  .card button:hover{background:#c44}
+  .card button.alt{background:#444}.card button.alt:hover{background:#666}
+  .card button.armed{outline:3px solid #ffd65a;background:#c44}
+  .card button.leave{background:#6b1c1c}.card button.leave:hover{background:#9b2a2a}
+  .card small{display:block;margin-top:10px;text-align:center;opacity:.6}
+  .card small.hint{margin:-4px 0 8px;text-align:left;font-size:10px}
+  /* main menu / multiplayer */
+  #menu{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45)}
+  .mcard{background:#1b1b22ee;border:2px solid #a33;padding:20px 26px;width:420px;max-height:94vh;overflow:auto;box-shadow:0 0 40px #000;text-align:center}
+  .mcard h1{margin:0;color:#e55;letter-spacing:4px;font-size:34px}
+  .mcard .sub{opacity:.6;font-size:11px;margin-bottom:14px}
+  .mcard h3{margin:16px 0 6px;font-size:13px;color:#9fd8ff}
+  .mcard button{padding:8px 12px;background:#a33;color:#fff;border:0;font:bold 13px monospace;cursor:pointer;margin:3px}
+  .mcard button:hover{background:#c44}
+  .mcard button.big{width:100%;padding:12px;font-size:16px;margin:3px 0}
+  .mcard button.alt{background:#444}.mcard button.alt:hover{background:#666}
+  .mcard textarea{width:100%;box-sizing:border-box;height:62px;background:#0e0e12;color:#cfe;border:1px solid #555;font:10px monospace;resize:none}
+  .mcard label{display:block;text-align:left;font-size:11px;opacity:.8;margin:8px 0 2px}
+  #mpStatus{font-size:12px;margin:6px 0;color:#ffd65a}
+  .mcard .note{font-size:10px;opacity:.55;margin-top:10px;line-height:1.4}
+</style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+
+<div id="hud">
+  <div id="tl">
+    <div class="bar"><i id="hpFill"></i><span id="hpText"></span></div>
+    <div class="bar st"><i id="stFill"></i></div>
+    <div id="chat">
+      <div id="chatLog"></div>
+      <input id="chatInput" maxlength="120" placeholder="Type a message, Enter to send" autocomplete="off">
+    </div>
+    <div id="sc"><button id="scBtn">Safe Chat &#9662;</button><div id="scMenu" class="hide"></div></div>
+  </div>
+  <div id="tr">
+    <div id="fps"></div>
+    <div id="lb"></div>
+    <div id="stats" class="hide"></div>
+  </div>
+  <div id="info"></div>
+  <div id="br">
+    <div id="controls">W/S move &middot; A/D turn &middot; Q/E strafe &middot; Shift sprint &middot; Space jump &middot; hold Right Mouse to look<br>Wheel/Z/X zoom &middot; R reset zoom &middot; V camera &middot; C shift lock &middot; 1-6 tools &middot; ~ backpack (drag items to move/drop) &middot; Backspace drop &middot; \ quick chat &middot; Enter or / chat &middot; Esc menu</div>
+    <div id="ver"></div>
+  </div>
+  <svg id="lockIcon" class="hide" viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="rgba(0,0,0,.35)" stroke="#fff" stroke-width="2"/><rect x="10" y="16" width="14" height="10" rx="2" fill="#fff"/><path d="M13 16v-3a4 4 0 0 1 8 0v3" fill="none" stroke="#fff" stroke-width="2.4"/></svg>
+  <div id="pack" class="hide"><div class="ph">Backpack (~ to close)</div><small>Drag items here, between slots, or out onto the ground to drop</small><div id="packGrid"></div></div>
+  <div id="hotbar"></div>
+  <div id="dead" class="hide">YOU DIED<small>Respawning...</small></div>
+</div>
+
+<div id="settings" class="hide">
+  <div class="card">
+    <h2>Settings</h2>
+    <div class="tabs" id="tabs">
+      <button data-t="cam" class="on">Camera</button><button data-t="gfx">Graphics</button><button data-t="game">Gameplay</button><button data-t="ui">Interface</button><button data-t="dbg">Debug</button>
+    </div>
+
+    <div class="tab" id="t-cam">
+      <label>Mouse sensitivity <b id="vSens"></b><input type="range" id="sSens" min="0.3" max="3" step="0.1"></label>
+      <label>Field of view <b id="vFov"></b><input type="range" id="sFov" min="50" max="100" step="5"></label>
+      <label>Invert mouse Y <input type="checkbox" id="sInv"></label>
+      <label>Shift lock (C) <input type="checkbox" id="sLock"></label>
+      <label>Click to walk <input type="checkbox" id="sClick"></label>
+      <small class="hint">Click the ground and your character plans a route there, jumping over steps, gaps and platforms by itself. Works while no tool is equipped; any move key cancels it.</small>
+      <label>Mouse wheel <select id="sWheel"><option value="camera">Camera distance</option><option value="zoom">Zoom (FOV)</option></select></label>
+      <small class="hint">Camera distance: scroll out from first person into third person (like Roblox) and back in.</small>
+    </div>
+
+    <div class="tab hide" id="t-gfx">
+      <label>Render quality <select id="sQual"><option value="320">Low</option><option value="480">Medium</option><option value="720">High</option></select></label>
+      <label>V-Sync <input type="checkbox" id="sVsync"></label>
+      <label>FPS limit <select id="sFpsLim"><option value="0">Unlimited</option><option value="30">30</option><option value="60">60</option><option value="90">90</option><option value="120">120</option><option value="144">144</option><option value="240">240</option></select></label>
+      <small class="hint">V-Sync on = the game draws once per screen refresh. Off = it draws as fast as it can (uses more CPU); the FPS limit still applies.</small>
+      <label>Fog <input type="checkbox" id="sFog"></label>
+      <label>Fog distance <b id="vFogD"></b><input type="range" id="sFogD" min="100" max="2500" step="50"></label>
+      <label>Fog color <select id="sFogC"><option value="black">Black</option><option value="gray">Gray</option><option value="sky">Sky blue</option><option value="red">Red</option></select></label>
+      <label>Shadows <input type="checkbox" id="sShadow"></label>
+      <label>Skybox <input type="checkbox" id="sSky"></label>
+      <label>3D items &amp; force-field <input type="checkbox" id="sMod3d"></label>
+      <small class="hint">On: items (in your hand and on the ground) and the spawn force-field are real 3D models. Off: the classic flat sprites and bubble.</small>
+    </div>
+
+    <div class="tab hide" id="t-game">
+      <label>Enemy bot <input type="checkbox" id="sBot"></label>
+      <label>Dying enabled <input type="checkbox" id="sDie"></label>
+      <label>Character collisions <input type="checkbox" id="sCol"></label>
+      <label>Death animation <select id="sDeath"><option value="break">Break apart (Roblox)</option><option value="fall">Fall over (classic)</option></select></label>
+      <small class="hint">Collisions on: players and the bot are solid and block each other. In multiplayer the host controls the bot.</small>
+    </div>
+
+    <div class="tab hide" id="t-ui">
+      <label>Show FPS <input type="checkbox" id="sFps"></label>
+      <label>Show ping <input type="checkbox" id="sPing"></label>
+      <small class="hint">In multiplayer this is the round-trip time to your friend; alone it is the local loopback delay.</small>
+      <label>Show controls <input type="checkbox" id="sCtl"></label>
+      <label>Show chat <input type="checkbox" id="sChat"></label>
+    </div>
+
+    <div class="tab hide" id="t-dbg">
+      <label>Wireframe map <input type="checkbox" id="sWire"></label>
+      <label>Show click-walk path <input type="checkbox" id="sPath"></label>
+      <small class="hint">Draws the exact route click-to-walk follows: green = walking, pink = a jump (orange = sprint jump), blue = the surfaces it stands on.</small>
+      <label>Show hitboxes <input type="checkbox" id="sHit"></label>
+      <small class="hint">Hitboxes: cyan = you, red = the bot, orange = the other player. Dim box = wall collision, bright parts = the real body that blocks other characters.</small>
+      <label>Resource stats <input type="checkbox" id="sStats"></label>
+      <small class="hint">Data sizes of world, rendering, lighting and physics, plus RAM / CPU / GPU. Browsers don't expose true CPU or GPU load, so those are estimates.</small>
+    </div>
+
+    <button id="respawn" class="alt">Respawn (press R, then Enter)</button>
+    <button id="resume">Resume</button>
+    <button id="leave" class="leave">Leave game (press L, then Enter)</button>
+    <small id="verTxt"></small>
+  </div>
+</div>
+
+<div id="menu">
+  <div class="mcard">
+    <h1>redWalls</h1>
+    <div class="sub" id="menuVer"></div>
+    <button class="big" id="playBtn">Play</button>
+    <h3>Multiplayer (2 players)</h3>
+    <div id="mpStatus">Not connected</div>
+    <div>
+      <button id="mpLocal" class="alt">Same browser: two tabs</button>
+    </div>
+    <div>
+      <button id="mpHost" class="alt">Host with code</button>
+      <button id="mpJoin" class="alt">Join with code</button>
+    </div>
+    <div id="mpHostBox" class="hide">
+      <label>1. Send this code to your friend</label><textarea id="mpOffer" readonly></textarea>
+      <button id="mpCopyOffer" class="alt">Copy</button>
+      <label>2. Paste the reply code they send back</label><textarea id="mpAnswerIn"></textarea>
+      <button id="mpConnect">Connect</button>
+    </div>
+    <div id="mpJoinBox" class="hide">
+      <label>1. Paste the code your friend (the host) sent you</label><textarea id="mpOfferIn"></textarea>
+      <button id="mpMakeAnswer">Create reply code</button>
+      <label>2. Send this reply code back to the host</label><textarea id="mpAnswer" readonly></textarea>
+      <button id="mpCopyAnswer" class="alt">Copy</button>
+    </div>
+    <button id="mpDisc" class="alt hide">Disconnect</button>
+    <div class="note">Two tabs: open this same page in a second tab and press "Same browser" in both.<br>Over the internet: one player hosts and sends the code, the other joins and sends back the reply code (no server needed, uses peer-to-peer WebRTC).</div>
+  </div>
+</div>
+
+<script>
+const VERSION = "V.13";
+const $ = id => document.getElementById(id);
+const canvas = $("gameCanvas"), ctx = canvas.getContext("2d");
+
+// ---------- Settings ----------
+const S = { sens: 1, fov: 70, qual: 480, wheel: "camera", sky: true, models3d: true, death: "break", pathDebug: false, vsync: true, fpsLimit: 0, charCol: true, fog: true, fogDist: 1200, fogCol: "sky", shadows: true, bot: true, dying: true, lock: false, clickWalk: false, wire: false, hitbox: false, stats: false, ping: false, inv: false, fps: true, ctl: true, chat: true };
+try { Object.assign(S, JSON.parse(localStorage.getItem("redWallsSettings") || "{}")); } catch (e) {}
+S.fov = Math.max(50, Math.min(100, Math.round(S.fov / 5) * 5));
+const save = () => { try { localStorage.setItem("redWallsSettings", JSON.stringify(S)); } catch (e) {} };
+const FOGC = { black: [0, 0, 0], gray: [120, 120, 130], sky: [170, 205, 238], red: [100, 15, 15] };
+let FR = 0, FG = 0, FB = 0, fogK = 0;
+
+// ---------- Render buffers ----------
+let W = S.qual, H = 270, img, buf, zb, lastC = null;
+let skyCu = new Float32Array(0), skyIv = new Float32Array(0), skyCol = new Int32Array(0);
+const st = { faces: 0, tris: 0, boxes: 0, boxesTot: 0, items: 0, itemsTot: 0 }; // per-frame render counters
+function resize() {
+  H = Math.max(200, Math.round(W * innerHeight / innerWidth));
+  canvas.width = W; canvas.height = H;
+  ctx.imageSmoothingEnabled = false;
+  img = ctx.createImageData(W, H);
+  buf = new Uint32Array(img.data.buffer);
+  zb = new Float32Array(W * H);          // depth buffer (stores 1/depth: bigger = nearer)
+  skyCu = new Float32Array(W); skyIv = new Float32Array(W); skyCol = new Int32Array(W);
+}
+addEventListener("resize", resize); resize();
+
+// ---------- Constants ----------
+const TILE = 64, EYE = 32, BODY_H = 36, RADIUS = 12, STEP = 8, NEAR = 1.5;
+const GRAVITY = 0.4, JUMP_FORCE = 4.8, FLY_MAX = 520, VOID_Z = -220;
+const SHIELD_TICKS = 240; // spawn shield lasts 4 seconds
+
+// ---------- Procedural textures ----------
+let seed = 1337;
+const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
+const n = a => (rnd() - 0.5) * a;
+const rgb = (r, g, b) => (0xFF000000 | (Math.max(0, Math.min(255, b)) << 16) | (Math.max(0, Math.min(255, g)) << 8) | Math.max(0, Math.min(255, r))) >>> 0;
+const T = 64;
+const tex = fn => { const a = new Uint32Array(T * T); for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) a[y * T + x] = fn(x, y); return { d: a, m: 63 }; };
+
+const brick = tex((x, y) => {
+  const row = y >> 4, bx = (x + (row & 1) * 16) & 31;
+  if ((y & 15) < 2 || bx < 2) return rgb(165 + n(14), 160 + n(14), 150 + n(14));
+  const v = n(44); return rgb(160 + v + (row * 7 % 20), 36 + v * .3, 30 + v * .3);
+});
+const stone = tex((x, y) => {
+  if (y % 32 < 2 || (x + (y >> 5) * 16) % 32 < 2) return rgb(60, 60, 66);
+  const g = 118 + n(36) + ((x * 7 + y * 13) % 11); return rgb(g, g, g + 6);
+});
+const wood = tex((x, y) => {
+  const p = x >> 4;
+  if (x % 16 < 1) return rgb(55, 32, 14);
+  const gr = Math.sin((y + p * 17) * .35 + Math.sin(x * .5)) * 10;
+  return rgb(140 + gr + n(10), 90 + gr * .7 + n(8), 45 + n(6));
+});
+const metal = tex((x, y) => {
+  if (x < 3 || y < 3 || x > 60 || y > 60) return rgb(35, 40, 50);
+  for (const [rx, ry] of [[7, 7], [56, 7], [7, 56], [56, 56]]) if ((x - rx) ** 2 + (y - ry) ** 2 < 6) return rgb(170, 175, 185);
+  if (y > 27 && y < 36) return rgb(40, 200 + n(30), 230);
+  return rgb(70 + n(8), 80 + n(8), 95 + n(8));
+});
+const lava = tex((x, y) => { // kill brick / lava
+  const v = Math.sin(x * .25 + Math.sin(y * .3) * 2) + Math.sin(y * .22 + Math.cos(x * .18) * 2), t = (v + 2) / 4;
+  return t < .25 ? rgb(70 + n(12), 0, 0) : rgb(205 + 50 * t, 40 + 150 * t * t + n(12), 0);
+});
+const floorTex = tex((x, y) => { // classic area floor
+  if (x % 32 < 1 || y % 32 < 1) return rgb(15, 80, 25);
+  const light = ((x >> 5) + (y >> 5)) & 1; const v = n(22);
+  return light ? rgb(50 + v, 170 + v, 60 + v) : rgb(35 + v, 135 + v, 45 + v);
+});
+const spawnTex = tex((x, y) => { // spawn-location pad
+  if (x < 3 || y < 3 || x > 60 || y > 60) return rgb(25, 50, 110);
+  const r = Math.hypot(x - 31.5, y - 31.5);
+  if (r < 5) return rgb(230, 245, 255);
+  if (Math.abs(r - 20) < 2.5) return rgb(130, 210, 255);
+  return rgb(40 + n(6), 90 + n(6), 175 + n(6));
+});
+const ceilTex = tex((x, y) => {
+  if (x % 32 < 1 || y % 32 < 1) return rgb(60, 80, 110);
+  const v = n(14); return rgb(125 + v, 170 + v, 215 + v);
+});
+const plate = tex((x, y) => { // baseplate: grey-green studded plate
+  const gx = x & 15, gy = y & 15, v = n(8);
+  if (gx < 1 || gy < 1) return rgb(62 + v, 92 + v, 60 + v);
+  const r = Math.hypot(gx - 8, gy - 8);
+  if (r < 4.2) return rgb(116 + v, 156 + v, 108 + v);
+  if (r < 5.4) return rgb(58 + v, 88 + v, 56 + v);
+  return rgb(88 + v, 128 + v, 82 + v);
+});
+const roof = tex((x, y) => { // shingles
+  const row = y >> 3, bx = (x + (row & 1) * 8) & 15;
+  if ((y & 7) > 5 || bx < 1) return rgb(66, 24, 20);
+  const v = n(16); return rgb(150 + v + (row % 3) * 7, 52 + v * .4, 40 + v * .4);
+});
+const plaster = tex((x, y) => { // house walls: stucco with timber beams
+  if (x < 4 || x > 59 || (y > 28 && y < 34)) return rgb(104 + n(8), 68 + n(6), 38 + n(5));
+  const v = n(10); return rgb(226 + v, 212 + v, 176 + v);
+});
+const woodFloor = tex((x, y) => {
+  if ((y & 15) < 1) return rgb(70, 44, 22);
+  const plank = y >> 4, seam = ((x + plank * 23) & 63) < 1; if (seam) return rgb(70, 44, 22);
+  const t = (plank * 37 % 5) * 5; return rgb(176 + t + n(8), 122 + t + n(6), 70 + n(5));
+});
+const leaf = tex((x, y) => { const v = n(40); return rgb(40 + v * .5, 120 + v, 40 + v * .4); });
+const mkTile = (r, g, b) => tex((x, y) => { // colourful obstacle-course tiles
+  if (x < 3 || y < 3 || x > 60 || y > 60) return rgb(r * .5, g * .5, b * .5);
+  const s = ((x + y) >> 4) & 1; return rgb(r * (s ? 1 : .86) + n(6), g * (s ? 1 : .86) + n(6), b * (s ? 1 : .86) + n(6));
+});
+const mkTeamPad = (r, g, b) => tex((x, y) => { // coloured team spawn pad
+  if (x < 3 || y < 3 || x > 60 || y > 60) return rgb(r * .45, g * .45, b * .45);
+  const d = Math.hypot(x - 31.5, y - 31.5); if (d < 5) return rgb(255, 255, 255); if (Math.abs(d - 20) < 2.5) return rgb(r * .5 + 120, g * .5 + 120, b * .5 + 120);
+  return rgb(r + n(6), g + n(6), b + n(6));
+});
+const tBlue = mkTile(70, 140, 255), tOrange = mkTile(255, 150, 50), tPurple = mkTile(170, 90, 255), tPink = mkTile(255, 100, 170), tGold = mkTile(255, 210, 60), tGrey = mkTile(150, 150, 160), tRed = mkTile(220, 60, 60), tWhite = mkTile(235, 235, 240);
+const trussTex = tex((x, y) => { // climbable truss: a metal frame with a cross, see-through in between (alpha-tested)
+  const edge = x < 6 || x > 57 || y < 6 || y > 57, cross = Math.abs(x - y) < 5 || Math.abs(x + y - 63) < 5;
+  if (!edge && !cross) return 0;
+  const v = n(14); return edge ? rgb(235 + v, 150 + v, 40) : rgb(205 + v, 205 + v, 215 + v);
+});
+
+// soft shadow textures (alpha only): blob under characters, gradient strips along wall bases
+const blobTex = { d: new Uint32Array(32 * 32), m: 31 };
+for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) { const r = Math.hypot(x - 15.5, y - 15.5) / 16, a = r >= 1 ? 0 : Math.pow(1 - r, 1.4); blobTex.d[y * 32 + x] = (Math.round(a * 255) << 24) >>> 0; }
+const aoTex = { d: new Uint32Array(16 * 16), m: 15 };
+for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) aoTex.d[y * 16 + x] = (Math.round(Math.pow(1 - y / 15, 1.7) * 255) << 24) >>> 0;
+const aoCorner = { d: new Uint32Array(16 * 16), m: 15 }; // quarter-round soft corner (texel 0,0 = the box corner)
+for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) aoCorner.d[y * 16 + x] = (Math.round(Math.pow(Math.max(0, 1 - Math.hypot(x, y) / 15), 1.7) * 255) << 24) >>> 0;
+
+// ---------- Skybox (cylindrical panorama: gradient, sun, clouds, distant mountains) ----------
+const SKW = 512, SKH = 128, SKY = { d: new Uint32Array(SKW * SKH) };
+(function () {
+  const hash = (i, j) => { const s = Math.sin(i * 127.1 + j * 311.7) * 43758.5453; return s - Math.floor(s); };
+  const vnoise = (u, v, cells) => { // value noise, wraps horizontally
+    const x = u * cells, y = v, xi = Math.floor(x), yi = Math.floor(y), fx = x - xi, fy = y - yi;
+    const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy), w = i => ((i % cells) + cells) % cells;
+    const a = hash(w(xi), yi), b = hash(w(xi + 1), yi), c = hash(w(xi), yi + 1), d = hash(w(xi + 1), yi + 1);
+    return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy;
+  };
+  for (let r = 0; r < SKH; r++) {
+    const t = 1.7 - r * (2.2 / (SKH - 1)); // height above the horizon (view-ray slope)
+    for (let c = 0; c < SKW; c++) {
+      const u = c / SKW;
+      let R, G, B;
+      if (t >= 0) { const k = Math.min(1, t / 1.5); R = 190 - 120 * k; G = 218 - 100 * k; B = 245 - 55 * k; }
+      else { R = 170; G = 205; B = 238; } // hazy ground colour below the horizon
+      // sun glow + disc
+      const du = Math.min(Math.abs(u - .2), 1 - Math.abs(u - .2)) * 6.2, dv = t - .85, sd = Math.hypot(du, dv);
+      if (t > 0) { const g = Math.max(0, 1 - sd / .9); R += 70 * g * g; G += 60 * g * g; B += 20 * g * g; if (sd < .075) { R = 255; G = 252; B = 225; } }
+      // clouds
+      if (t > .08 && t < 1.35) {
+        const cn = vnoise(u, (t + 2) * 3.2, 8) * .6 + vnoise(u, (t + 2) * 7, 16) * .3 + vnoise(u, (t + 2) * 15, 32) * .1;
+        const d = Math.max(0, Math.min(1, (cn - .52) * 4)) * Math.min(1, (t - .08) * 6) * Math.min(1, (1.35 - t) * 3);
+        const sh = 255 - 38 * (1 - Math.min(1, (cn - .5) * 3));
+        R += (sh - R) * d; G += (sh - G) * d; B += (sh + 4 - B) * d;
+      }
+      // mountains on the horizon
+      const ridge = .05 + .09 * vnoise(u, 40, 12) + .045 * vnoise(u, 41, 40);
+      if (t < ridge && t > -.5) { const k = Math.max(0, Math.min(1, t / ridge)); R = 92 + 40 * k; G = 112 + 40 * k; B = 140 + 30 * k; if (t < 0) { R = 120; G = 150; B = 160; } }
+      SKY.d[r * SKW + c] = rgb(R, G, B);
+    }
+  }
+})();
+
+// ---------- Tools / items ----------
+const mkIcon = f => { const c = document.createElement("canvas"); c.width = c.height = 16; const g = c.getContext("2d"); f((col, x, y, w, h) => { g.fillStyle = col; g.fillRect(x, y, w, h); }); return c; };
+const TOOLS = {
+  sword:  { name: "Sword",  color: "#c8ccd4", dmg: 25, draw: r => { r("#c8ccd4", 7, 1, 2, 9); r("#eef", 7, 1, 1, 9); r("#b8860b", 4, 10, 8, 2); r("#6b4226", 7, 12, 2, 4); } },
+  torch:  { name: "Torch",  color: "#ff9a1f", dmg: 10, light: true, draw: r => { r("#6b4226", 7, 7, 2, 9); r("#ff7a00", 5, 2, 6, 6); r("#ffd23f", 6, 3, 4, 4); } },
+  hammer: { name: "Hammer", color: "#8a8f99", dmg: 18, draw: r => { r("#6b4226", 7, 5, 2, 11); r("#8a8f99", 3, 1, 10, 5); r("#aab0ba", 3, 1, 10, 1); } },
+  potion: { name: "Potion", color: "#d63a8c", dmg: 0,  draw: r => { r("#d63a8c", 4, 7, 8, 8); r("#ff7ac0", 5, 8, 2, 4); r("#cfe8ff", 6, 3, 4, 4); r("#6b4226", 6, 2, 4, 1); } },
+  wand:   { name: "Wand",   color: "#7a5cff", dmg: 8,  draw: r => { r("#5a3a1e", 7, 5, 2, 11); r("#7a5cff", 5, 1, 6, 4); r("#fff", 7, 2, 2, 2); } },
+  key:    { name: "Key",    color: "#f2c230", dmg: 4,  draw: r => { r("#f2c230", 5, 1, 6, 5); r("#1b1b22", 7, 3, 2, 1); r("#f2c230", 7, 6, 2, 9); r("#f2c230", 9, 11, 3, 2); r("#f2c230", 9, 14, 3, 2); } }
+};
+const ICONS = {}, ICOND = {};
+for (const k in TOOLS) {
+  ICONS[k] = mkIcon(TOOLS[k].draw); TOOLS[k].url = ICONS[k].toDataURL();
+  ICOND[k] = { d: new Uint32Array(ICONS[k].getContext("2d").getImageData(0, 0, 16, 16).data.buffer), m: 15 }; // pixels for the 3D renderer
+}
+
+// 3D tool models: boxes in tool space (x = sideways, y = thickness, z = along the tool, z = 0 is where the hand holds it)
+// [x0, x1, y0, y1, z0, z1, colour, glow (1 = flame, 2 = glows)]
+const MODELS = {
+  sword:  { cz: 12, boxes: [[-1, 1, -1, 1, -5, 3, "#6b4226"], [-5, 5, -1.4, 1.4, 3, 5, "#b8860b"], [-2, 2, -.8, .8, 5, 27, "#c8ccd4"], [-1, 1, -.6, .6, 27, 30, "#eef2f8"]] },
+  torch:  { cz: 6,  boxes: [[-1.2, 1.2, -1.2, 1.2, -6, 12, "#6b4226"], [-2.4, 2.4, -2.4, 2.4, 12, 19, "#ff9a1f", 1], [-1.4, 1.4, -1.4, 1.4, 14, 17, "#ffe070", 2]] },
+  hammer: { cz: 8,  boxes: [[-1, 1, -1, 1, -5, 16, "#6b4226"], [-5, 5, -2.5, 2.5, 16, 22, "#8a8f99"], [-5, 5, -2.5, 2.5, 21, 22.5, "#aab0ba"]] },
+  potion: { cz: 3,  boxes: [[-3.2, 3.2, -3.2, 3.2, -4, 4, "#d63a8c"], [-1.7, 1.7, -1.7, 1.7, 4, 7, "#cfe8ff"], [-1.9, 1.9, -1.9, 1.9, 7, 8.5, "#b08850"]] },
+  wand:   { cz: 7,  boxes: [[-.9, .9, -.9, .9, -6, 16, "#5a3a1e"], [-2.5, 2.5, -2.5, 2.5, 16, 20, "#7a5cff", 2], [-1, 1, -1, 1, 20, 22, "#ffffff", 2]] },
+  key:    { cz: 9,  boxes: [[-.8, .8, -.8, .8, 0, 14, "#f2c230"], [-4, 4, -.8, .8, 18.5, 20, "#f2c230"], [-4, 4, -.8, .8, 14, 15.5, "#f2c230"], [-4, -2.5, -.8, .8, 15.5, 18.5, "#f2c230"], [2.5, 4, -.8, .8, 15.5, 18.5, "#f2c230"], [.8, 4, -.8, .8, 2, 4, "#f2c230"], [.8, 3.4, -.8, .8, 6, 8, "#f2c230"]] }
+};
+for (const k in MODELS) MODELS[k].parts = MODELS[k].boxes.map(b => ({ id: "tool", tool: true, ang: "armR", px: 10.5, py: 28, oy: -14, ox: (b[0] + b[1]) / 2, cy: (b[2] + b[3]) / 2, oz: (b[4] + b[5]) / 2,
+  hs: [(b[1] - b[0]) / 2, (b[3] - b[2]) / 2, (b[5] - b[4]) / 2], bands: [[0, 1, b[6]]], emi: !!b[7], flame: b[7] === 1 }));
+const boxFaces = b => { const [x0, x1, y0, y1, z0, z1] = b; return [[0, 1, [[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]]], [0, -1, [[x0, y1, z0], [x0, y0, z0], [x0, y0, z1], [x0, y1, z1]]],
+  [1, 1, [[x1, y1, z0], [x0, y1, z0], [x0, y1, z1], [x1, y1, z1]]], [1, -1, [[x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z1]]],
+  [2, 1, [[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]]], [2, -1, [[x0, y1, z0], [x1, y1, z0], [x1, y0, z0], [x0, y0, z0]]]]; };
+
+// ---------- World: everything is built from boxes ----------
+const NL = { top: 1, bot: .45, xp: .8, xm: .6, yp: .72, ym: .92 }; // face brightness by direction
+const boxes = [], blobs = []; // blobs: soft round ground shadows (tree canopies)
+function mkFace(ax, sg, c, pts, tx, nl, ts) {
+  let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9, z0 = 1e9, z1 = -1e9;
+  for (const p of pts) { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); z0 = Math.min(z0, p[2]); z1 = Math.max(z1, p[2]); }
+  return { ax, sg, c, pts, bb: [x0, x1, y0, y1, z0, z1], M: { mode: 0, td: tx.d, tm: tx.m, tw: tx.m + 1, ts, b: nl, nl, L: 0, pxl: false, ax, cc: c, at: false, col: 0, alpha: 0 } };
+}
+function addBox(x0, y0, z0, x1, y1, z1, tx, o) {
+  o = o || {}; const tt = o.top || tx, ts = o.ts || 1;
+  const b = { x0, y0, z0, x1, y1, z1, kill: !!o.kill, solid: o.solid !== false, tag: o.tag || "", glow: !!o.glow, aoZ: o.aoZ || .3, ao: z0 <= 0 && o.ao !== false && z1 - z0 >= 8 && !o.kill,
+    cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, cz: (z0 + z1) / 2, faces: [] };
+  const F = b.faces;
+  F.push(mkFace(2, 1, z1, [[x0, y0, z1, x0, y0], [x1, y0, z1, x1, y0], [x1, y1, z1, x1, y1], [x0, y1, z1, x0, y1]], tt, NL.top, ts));
+  if (z0 > 0) F.push(mkFace(2, -1, z0, [[x0, y1, z0, x0, y1], [x1, y1, z0, x1, y1], [x1, y0, z0, x1, y0], [x0, y0, z0, x0, y0]], tx, NL.bot, ts));
+  F.push(mkFace(0, 1, x1, [[x1, y0, z0, y0, -z0], [x1, y1, z0, y1, -z0], [x1, y1, z1, y1, -z1], [x1, y0, z1, y0, -z1]], tx, NL.xp, ts));
+  F.push(mkFace(0, -1, x0, [[x0, y1, z0, y1, -z0], [x0, y0, z0, y0, -z0], [x0, y0, z1, y0, -z1], [x0, y1, z1, y1, -z1]], tx, NL.xm, ts));
+  F.push(mkFace(1, 1, y1, [[x1, y1, z0, x1, -z0], [x0, y1, z0, x0, -z0], [x0, y1, z1, x0, -z1], [x1, y1, z1, x1, -z1]], tx, NL.yp, ts));
+  F.push(mkFace(1, -1, y0, [[x0, y0, z0, x0, -z0], [x1, y0, z0, x1, -z0], [x1, y0, z1, x1, -z1], [x0, y0, z1, x0, -z1]], tx, NL.ym, ts));
+  if (o.at) for (const f of F) f.M.at = true;
+  if (o.truss) b.truss = true;
+  boxes.push(b); return b;
+}
+
+// --- baseplate + spawn locations ---
+const SPAWNS = [{ x: -60, y: 0, z: 3, angle: 0 }, { x: -60, y: 90, z: 3, angle: 0 }];
+addBox(-900, -900, -16, 2300, 1200, 0, plate, { ao: false });
+for (const s of SPAWNS) addBox(s.x - 32, s.y - 32, 0, s.x + 32, s.y + 32, 3, spawnTex, { tag: "spawn", ao: false }).team = ""; // neutral pads: no team
+// team spawn locations: touch (stand on) a coloured pad to join that team; you then respawn on it
+const TEAM_Y = -200;
+const TEAMS = { red: { name: "Red", color: "#e74c3c", shirt: "#c0392b", x: -140, rgb: [220, 60, 50] }, blue: { name: "Blue", color: "#3498db", shirt: "#2471a3", x: -40, rgb: [50, 130, 230] },
+  green: { name: "Green", color: "#2ecc71", shirt: "#1e8449", x: 60, rgb: [50, 190, 100] }, yellow: { name: "Yellow", color: "#f1c40f", shirt: "#b7950b", x: 160, rgb: [240, 200, 40] } };
+for (const k in TEAMS) {
+  const T = TEAMS[k], pad = addBox(T.x - 32, TEAM_Y - 32, 0, T.x + 32, TEAM_Y + 32, 3, mkTeamPad(...T.rgb), { tag: "spawn", ao: false }); pad.team = k;
+  addBox(T.x - 2, TEAM_Y - 36, 3, T.x + 2, TEAM_Y - 32, 52, wood, { solid: false, ao: false });                      // flag pole
+  addBox(T.x + 2, TEAM_Y - 35, 36, T.x + 24, TEAM_Y - 33, 50, mkTile(...T.rgb), { solid: false, ao: false });        // team flag
+}
+
+// --- the house (x 300..540, y -110..110) ---
+(function () {
+  const X0 = 300, X1 = 540, Y0 = -110, Y1 = 110, WT = 12, ZF = 4, ZT = 84;
+  addBox(X0, Y0, 0, X1, Y1, ZF, woodFloor, { ts: 1, ao: false });
+  addBox(X0 - 20, -34, 0, X0, 34, 3, stone, { ao: false });                                  // front step
+  // west wall (front) with a door
+  addBox(X0, Y0, ZF, X0 + WT, -22, ZT, plaster); addBox(X0, 22, ZF, X0 + WT, Y1, ZT, plaster); addBox(X0, -22, 62, X0 + WT, 22, ZT, plaster);
+  // east wall
+  addBox(X1 - WT, Y0, ZF, X1, Y1, ZT, plaster);
+  // north wall with a window (x 400..440, z 34..62)
+  addBox(X0 + WT, Y0, ZF, 400, Y0 + WT, ZT, plaster); addBox(440, Y0, ZF, X1 - WT, Y0 + WT, ZT, plaster);
+  addBox(400, Y0, ZF, 440, Y0 + WT, 34, plaster); addBox(400, Y0, 62, 440, Y0 + WT, ZT, plaster);
+  // south wall with a window (x 330..370)
+  addBox(X0 + WT, Y1 - WT, ZF, 330, Y1, ZT, plaster); addBox(370, Y1 - WT, ZF, X1 - WT, Y1, ZT, plaster);
+  addBox(330, Y1 - WT, ZF, 370, Y1, 34, plaster); addBox(330, Y1 - WT, 62, 370, Y1, ZT, plaster);
+  // stepped gable roof
+  const layers = [[290, 550], [310, 530], [330, 510], [350, 490], [370, 470], [390, 450]];
+  layers.forEach((l, i) => addBox(l[0], Y0 - 10, ZT + i * 8, l[1], Y1 + 10, ZT + i * 8 + 8, roof, { ao: false }));
+  // furniture
+  addBox(380, -20, 4, 420, 20, 26, wood, { ao: false });                                       // table (solid block)
+  addBox(488, -96, 4, 528, -30, 16, tRed, { ao: false }); addBox(488, -96, 16, 528, -76, 24, tWhite, { ao: false }); // bed
+  addBox(318, 70, 4, 342, 94, 18, wood, { ao: false });                                        // crate
+})();
+
+// --- obstacle course (south of the spawn): platforms over a lava pit ---
+const COURSE = (function () {
+  const GAP = 58, Y0 = 440, Y1 = 500;
+  const seq = [[56, 12, tBlue], [56, 22, tOrange], [56, 32, tPurple], [56, 24, tPink], [150, 24, tGrey, 462, 478], [56, 34, tBlue], [36, 26, tOrange], [36, 34, tPurple], [36, 26, tPink], [70, 46, tGold, 420, 520]];
+  let x = -76, last = x;
+  const plats = [];
+  for (const s of seq) {
+    const w = s[0], top = s[1], y0 = s[3] || Y0, y1 = s[4] || Y1;
+    plats.push({ x0: x, x1: x + w, y0, y1, top, tx: s[2] }); last = x + w; x += w + GAP;
+  }
+  addBox(-110, 330, 0, last + 70, 600, 2, lava, { kill: true, glow: true, ts: 1, ao: false });  // lava pit
+  for (const p of plats) addBox(p.x0, p.y0, 0, p.x1, p.y1, p.top, p.tx, { ts: 2, ao: false });
+  const fin = plats[plats.length - 1];
+  fin.box = boxes[boxes.length - 1]; fin.box.tag = "finish";
+  addBox(fin.x0 + 4, fin.y0 + 4, fin.top, fin.x0 + 8, fin.y0 + 8, fin.top + 50, wood, { ao: false });  // flag pole
+  addBox(fin.x0 + 8, fin.y0 + 4, fin.top + 34, fin.x0 + 34, fin.y0 + 8, fin.top + 48, tRed, { ao: false });
+  // ground hurdles on the way (x -300..-200, y 190..270)
+  [[-300, 10], [-250, 18], [-200, 26]].forEach(([hx, h]) => addBox(hx, 190, 0, hx + 16, 270, h, tOrange, { ts: 2 }));
+  return { fin, last };
+})();
+
+// --- trees ---
+[[-320, -260], [120, -300], [650, -240], [820, 140], [-380, 520], [980, 300], [210, 250]].forEach(([tx, ty]) => {
+  addBox(tx - 7, ty - 7, 0, tx + 7, ty + 7, 44, wood, { ts: 2, ao: false });
+  blobs.push({ x: tx - 10, y: ty - 12, r: 46, a: .42 });
+  addBox(tx - 26, ty - 26, 44, tx + 26, ty + 26, 76, leaf, { ts: 2, ao: false });
+  addBox(tx - 14, ty - 14, 76, tx + 14, ty + 14, 94, leaf, { ts: 2, ao: false });
+});
+
+// --- trusses: walk into one and hold W to climb (S = down, Space = jump off). The short one reaches the house roof. ---
+const TRUSS = [[272, -64, 96], [-256, -128, 140]].map(([tx, ty, h]) => addBox(tx, ty, 0, tx + 16, ty + 16, h, trussTex, { solid: false, truss: true, at: true, ts: 4, ao: false }));
+
+// --- classic area: the original 16x16 map, now built from 3D boxes (west door at tile 0,5) ---
+const OX = 1100, OY = -420;
+(function () {
+  const MAP = ["2222222222222222", "2000000000000002", "2011100000033302", "2010000000000302", "2010004444000002", "2000004004000102", "2000000000000102", "2220000000000002",
+    "2000000330000002", "2000000030555002", "2001100000011002", "2001000000001002", "2000000444000002", "2005500000000002", "2033000000000332", "2222222222222222"].map(r => [...r].map(Number));
+  MAP[5][0] = 0; // doorway
+  const WT = [null, brick, stone, wood, metal, lava];
+  addBox(OX, OY, 0, OX + 1024, OY + 1024, 1, floorTex, { ao: false });
+  addBox(OX, OY, 64, OX + 1024, OY + 1024, 72, ceilTex, { top: stone, ao: false });
+  for (let ty = 0; ty < 16; ty++) {
+    let tx = 0;
+    while (tx < 16) {
+      const t = MAP[ty][tx]; if (!t) { tx++; continue; }
+      let e = tx; while (e + 1 < 16 && MAP[ty][e + 1] === t) e++;
+      addBox(OX + tx * TILE, OY + ty * TILE, 1, OX + (e + 1) * TILE, OY + (ty + 1) * TILE, 64, WT[t], { kill: t === 5, glow: t === 5, aoZ: 1.3, ao: t !== 5 });
+      tx = e + 1;
+    }
+  }
+})();
+const SOLID = boxes.filter(b => b.solid);
+const ground = boxes.filter(b => b.ao);
+
+// ---------- Items ----------
+let nid = 1;
+const mkItem = (type, x, y, z) => ({ id: "w" + (nid++), type, x, y, z: z || 0, noPick: 0 });
+const worldItems = () => { nid = 1; return [mkItem("sword", 30, -110), mkItem("torch", 150, 70), mkItem("potion", -210, 90), mkItem("hammer", 770, 130), mkItem("wand", -170, 420), mkItem("potion", 340, -30, 4),
+  mkItem("key", COURSE.fin.x0 + 36, 470, 46), mkItem("torch", OX + 13.5 * TILE, OY + 1.5 * TILE, 1), mkItem("sword", OX + 3.5 * TILE, OY + 1.5 * TILE, 1), mkItem("potion", OX + 12.5 * TILE, OY + 8.5 * TILE, 1)]; };
+let items = worldItems();
+const inv = { hot: Array(6).fill(null), pack: Array(16).fill(null), sel: -1 };
+const arr = z => z === "hot" ? inv.hot : inv.pack;
+let packOpen = false, qcOpen = false, drag = null, inGame = false;
+const held = () => inv.sel >= 0 && inv.hot[inv.sel] ? TOOLS[inv.hot[inv.sel].type] : null;
+const heldType = () => inv.sel >= 0 && inv.hot[inv.sel] ? inv.hot[inv.sel].type : null;
+
+function slotEl(zone, idx, item, cls, num, onclick) {
+  const d = document.createElement("div"); d.className = "slot " + cls;
+  if (num) { const s = document.createElement("span"); s.className = "num"; s.textContent = num; d.appendChild(s); }
+  if (item) {
+    const i = document.createElement("img"); i.src = TOOLS[item.type].url; d.appendChild(i);
+    const t = document.createElement("span"); t.textContent = TOOLS[item.type].name; d.appendChild(t);
+    d.draggable = true;
+    d.ondragstart = e => { drag = { zone, idx }; e.dataTransfer.setData("text/plain", "item"); e.dataTransfer.effectAllowed = "move"; };
+    d.ondragend = () => { drag = null; };
+  }
+  d.ondragover = e => e.preventDefault();
+  d.ondrop = e => { e.preventDefault(); e.stopPropagation(); if (drag) swapSlots(drag.zone, drag.idx, zone, idx); drag = null; };
+  d.onclick = onclick; return d;
+}
+function refreshInv() {
+  const hb = $("hotbar"), pg = $("packGrid"); hb.textContent = ""; pg.textContent = "";
+  inv.hot.forEach((it, i) => hb.appendChild(slotEl("hot", i, it, i === inv.sel ? "sel" : "", i + 1, () => equip(i))));
+  inv.pack.forEach((it, i) => pg.appendChild(slotEl("pack", i, it, "", "", () => packToHotbar(i))));
+}
+function swapSlots(z1, i1, z2, i2) {
+  if (z1 === z2 && i1 === i2) return;
+  const A = arr(z1), B = arr(z2), t = A[i1]; A[i1] = B[i2]; B[i2] = t;
+  if (z1 === "hot" && z2 === "hot") { if (inv.sel === i1) inv.sel = i2; else if (inv.sel === i2) inv.sel = i1; }
+  else if ((z1 === "hot" && i1 === inv.sel) || (z2 === "hot" && i2 === inv.sel)) inv.sel = -1; // moved to/from backpack: unequip
+  if (inv.sel >= 0 && !inv.hot[inv.sel]) inv.sel = -1;
+  refreshInv();
+}
+function packToHotbar(pi) {
+  if (!inv.pack[pi]) return;
+  let hi = inv.hot.findIndex(x => !x); if (hi < 0) hi = inv.sel >= 0 ? inv.sel : 0;
+  swapSlots("pack", pi, "hot", hi);
+}
+function equip(i) { if (inv.hot[i]) { inv.sel = inv.sel === i ? -1 : i; refreshInv(); } }
+function pickup(it) {
+  let hi = inv.hot.findIndex(x => !x), A = inv.hot;
+  if (hi < 0) { hi = inv.pack.findIndex(x => !x); A = inv.pack; }
+  if (hi < 0) { it.noPick = performance.now() + 3000; return addMsg("", "Your inventory is full.", true); }
+  A[hi] = { type: it.type }; items.splice(items.indexOf(it), 1); refreshInv();
+  net.send({ t: "pk", i: it.id }); addMsg("", "Picked up " + TOOLS[it.type].name + ".", true);
+}
+let dropN = 0;
+function dropToGround(zone, idx) { // drop an item from the hotbar/backpack onto the floor in front of you
+  const A = arr(zone), it = A[idx], p = player; if (!it || p.dead) return;
+  A[idx] = null; if (zone === "hot" && inv.sel === idx) inv.sel = -1;
+  let x = p.x + Math.cos(p.angle) * 30, y = p.y + Math.sin(p.angle) * 30;
+  if (blockedAt({ z: p.z }, x, y, 2)) { x = p.x; y = p.y; }
+  const d = { id: "d" + net.id + (dropN++), type: it.type, x, y, z: floorBelow(x, y, p.z + STEP), noPick: performance.now() + 1500 };
+  items.push(d); net.send({ t: "dr", it: { id: d.id, type: d.type, x: d.x, y: d.y, z: d.z } });
+  refreshInv(); addMsg("", "Dropped " + TOOLS[it.type].name + ".", true);
+}
+// drag targets: empty space in the backpack / hotbar panels, and the game world (= drop on the ground)
+$("pack").ondragover = e => e.preventDefault();
+$("pack").ondrop = e => { e.preventDefault(); if (drag && drag.zone === "hot") { const j = inv.pack.findIndex(x => !x); if (j >= 0) swapSlots("hot", drag.idx, "pack", j); } drag = null; };
+$("hotbar").ondragover = e => e.preventDefault();
+$("hotbar").ondrop = e => { e.preventDefault(); if (drag && drag.zone === "pack") { const j = inv.hot.findIndex(x => !x); if (j >= 0) swapSlots("pack", drag.idx, "hot", j); } drag = null; };
+canvas.addEventListener("dragover", e => e.preventDefault());
+canvas.addEventListener("drop", e => { e.preventDefault(); if (drag) dropToGround(drag.zone, drag.idx); drag = null; });
+
+// ---------- Lighting (torches) ----------
+const LS = []; // light sources this frame: [x, y, z, radius, intensity]
+function updateLights(now) {
+  LS.length = 0;
+  const fl = .94 + .04 * Math.sin(now * .0035) + .025 * Math.sin(now * .0091), h = held(); // slow, gentle flicker
+  if (h && h.light && !player.dead) LS.push([player.x, player.y, player.z + 30, 250, .62 * fl]);
+  if (remoteShown() && remote.heldType === "torch" && !remote.dead) LS.push([remote.x, remote.y, remote.z + 30, 250, .62 * fl]);
+  for (const it of items) if (TOOLS[it.type].light) LS.push([it.x, it.y, it.z + 14, 170, .5 * fl]);
+}
+function lightAt(x, y, z) { // 0..1 light amount at a world position
+  let l = 0;
+  for (let i = 0; i < LS.length; i++) {
+    const s = LS[i], dx = x - s[0], dy = y - s[1], dz = z - s[2], d2 = dx * dx + dy * dy + dz * dz, R = s[3];
+    const R2 = R * R; if (d2 < R2) { const q = 1 - d2 / R2, v = q * q * s[4]; if (v > l) l = v; } // smooth falloff, no square root
+  }
+  return l;
+}
+
+// ---------- Actors ----------
+let BASE_FOV = S.fov * Math.PI / 180;
+const FOV_MIN = 0.25, FOV_MAX = 1.9;
+const mkParts = c => [
+  { id: "head",  px: 0,     py: 31.5, hs: [4.2, 3.5, 4.2], oy: 0,  bands: [[0, 1, c.skin]] },
+  { id: "torso", px: 0,     py: 21,   hs: [7, 7, 3.5],     oy: 0,  bands: [[0, 1, c.shirt]] },
+  { id: "armL",  px: -10.5, py: 28,   hs: [3.5, 7, 3.5],   oy: -7, bands: [[0, 1, c.skin]] },
+  { id: "armR",  px: 10.5,  py: 28,   hs: [3.5, 7, 3.5],   oy: -7, bands: [[0, 1, c.skin]] },
+  { id: "legL",  px: -3.5,  py: 14,   hs: [3.5, 7, 3.5],   oy: -7, bands: [[0, 1, c.pants]] },
+  { id: "legR",  px: 3.5,   py: 14,   hs: [3.5, 7, 3.5],   oy: -7, bands: [[0, 1, c.pants]] }
+];
+const player = {
+  x: SPAWNS[0].x, y: SPAWNS[0].y, z: 3, vz: 0, ground: true, flying: false, noclip: false, heldType: null,
+  angle: 0, pitch: 0, fov: BASE_FOV, hp: 100, shield: SHIELD_TICKS, target: null, route: null, finished: false,
+  walk: 2, sprint: 3.8, rotSpeed: 0.05, stamina: 100, tired: false, sprinting: false,
+  phase: 0, amp: 0, dead: false, fall: 0, deathT: 0, emote: null, useT: 0, lastHit: null, team: "",
+  parts: mkParts({ skin: "#f5cd30", shirt: "#0d69ac", pants: "#a4bd47" })
+};
+const bot = { isBot: true, lod: 2, stuck: 0, sidestep: 0, x: 260, y: -200, z: 0, vz: 0, ground: true, angle: 0, hp: 50, dead: false, deadT: 0, fall: 0, atk: 0, cool: 0, phase: 0, amp: 0, wp: null, wpT: 0, flying: false, emote: null, useT: 0, heldType: null,
+  tx: 260, ty: -200, parts: mkParts({ skin: "#6aa84f", shirt: "#8b1a1a", pants: "#2b2b2b" }) };
+const remote = { isRemote: true, name: "Player 2", x: 0, y: 0, z: 0, vz: 0, ground: true, flying: false, angle: 0, tx: 0, ty: 0, tz: 0, ta: 0, hp: 100, dead: false, fall: 0, emote: null, useT: 0, heldType: null,
+  phase: 0, amp: 0, shield: 0, k: 0, d: 0, seen: false, last: 0, team: "", parts: mkParts({ skin: "#f5cd30", shirt: "#c0392b", pants: "#2c2c54" }) };
+const stats = { p: { k: 0, d: 0 }, b: { k: 0, d: 0 } };
+let zoomFov = BASE_FOV, viewMode = S.lock ? 1 : 0; // 0 first person, 1 third (behind), 2 third (front)
+let camDist = S.lock ? 105 : 0, camDistT = camDist; // third-person camera distance (the mouse wheel changes camDistT)
+function setView(m) { viewMode = m; if (m === 0) { camDistT = 0; camDist = 0; } else { if (camDistT < 40) camDistT = 105; camDist = Math.max(camDist, 12); } }
+const VIEW_NAMES = ["FIRST PERSON", "THIRD PERSON", "THIRD PERSON (FRONT)"];
+const lockOn = () => S.lock && viewMode === 1;
+const botOn = () => net.connected && !net.host ? net.botOn : S.bot;
+const remoteShown = () => net.connected && remote.seen && performance.now() - remote.last < 4000;
+const myName = () => !net.connected ? "Player" : net.host ? "Player 1" : "Player 2";
+
+function hurt(n, src) { // all damage goes through here (respects spawn shield + the "Dying" setting)
+  const p = player; if (p.dead || p.shield > 0) return;
+  p.hp = Math.max(S.dying ? 0 : 1, p.hp - n);
+  if (src) p.lastHit = { src, t: performance.now() };
+}
+function die() {
+  const p = player; p.dead = true; p.hp = 0; p.fall = 0; p.deathT = 0; p.sprinting = false; p.flying = false; p.noclip = false; p.emote = null; p.useT = 0; p.target = null; p.route = null; p.shield = 0; p.climbing = false; if (S.death === "break") breakApart(p);
+  stats.p.d++; const byBot = p.lastHit && performance.now() - p.lastHit.t < 4000 && p.lastHit.src === "bot";
+  if (byBot) { if (!net.connected || net.host) stats.b.k++; else net.send({ t: "died", s: "bot" }); }
+  p.lastHit = null; addMsg("", "You died.", true);
+}
+function spawnFor() {
+  const t = player.team && TEAMS[player.team]; // on a team? respawn on that team's pad
+  if (t) return { x: t.x + (net.connected ? (net.host ? -14 : 14) : 0), y: TEAM_Y, z: 3, angle: Math.PI / 2 };
+  return net.connected ? SPAWNS[net.host ? 0 : 1] : SPAWNS[Math.floor(Math.random() * SPAWNS.length)];
+}
+function setTeam(key) { // touching a coloured pad joins that team (the neutral blue pads leave it)
+  const p = player; p.team = key; p.parts = mkParts({ skin: "#f5cd30", shirt: key ? TEAMS[key].shirt : "#0d69ac", pants: "#a4bd47" });
+  addMsg("", key ? "You joined the " + TEAMS[key].name + " team!" : "You are no longer on a team.", true);
+}
+function respawn(quiet) {
+  const s = spawnFor();
+  Object.assign(player, { x: s.x, y: s.y, z: s.z, vz: 0, ground: true, flying: false, noclip: false, angle: s.angle, pitch: 0,
+    hp: 100, stamina: 100, tired: false, dead: false, fall: 0, deathT: 0, amp: 0, emote: null, useT: 0, target: null, route: null, shield: SHIELD_TICKS, finished: false, debris: null, climbing: false });
+  if (!quiet) addMsg("", "Respawned at the spawn location. Spawn shield active.", true);
+}
+
+// ---------- Physics (3D boxes) ----------
+const overlapXY = (b, x, y, r) => x - r < b.x1 && x + r > b.x0 && y - r < b.y1 && y + r > b.y0;
+function obbAabb(px, py, c, s, hw, hd, b) { // oriented rectangle (forward (c,s), right (-s,c)) vs axis-aligned box: separating-axis test
+  const hx = (b.x1 - b.x0) / 2, hy = (b.y1 - b.y0) / 2, dx = (b.x0 + b.x1) / 2 - px, dy = (b.y0 + b.y1) / 2 - py;
+  if (Math.abs(dx) >= hx + Math.abs(c) * hd + Math.abs(s) * hw) return false;
+  if (Math.abs(dy) >= hy + Math.abs(s) * hd + Math.abs(c) * hw) return false;
+  if (Math.abs(dx * c + dy * s) >= hd + hx * Math.abs(c) + hy * Math.abs(s)) return false;
+  if (Math.abs(-dx * s + dy * c) >= hw + hx * Math.abs(s) + hy * Math.abs(c)) return false;
+  return true;
+}
+function blockedAt(a, x, y, r) { // a solid box that stops a body at (x,y) standing at height a.z (with r given: a plain square of that radius)
+  if (r) { for (const b of SOLID) if (overlapXY(b, x, y, r) && b.z1 > a.z + STEP && b.z0 < a.z + BODY_H) return b; return null; }
+  const c = Math.cos(a.angle), s = Math.sin(a.angle); // otherwise the body's real shape (arms, torso, head, legs) is used
+  for (const b of SOLID) {
+    if (x + 20 < b.x0 || x - 20 > b.x1 || y + 20 < b.y0 || y - 20 > b.y1 || b.z1 <= a.z + STEP || b.z0 >= a.z + BODY_H) continue;
+    for (const pt of BODY_PARTS) if (b.z1 > a.z + pt.z0 && b.z0 < a.z + pt.z1 && obbAabb(x, y, c, s, pt.hw, pt.hd, b)) return b;
+  }
+  return null;
+}
+function touchesBox(a, x, y, b, m) { // does the body (grown by m) touch box b?
+  const c = Math.cos(a.angle), s = Math.sin(a.angle), bb = { x0: b.x0 - m, x1: b.x1 + m, y0: b.y0 - m, y1: b.y1 + m };
+  for (const pt of BODY_PARTS) if (a.z + pt.z1 > b.z0 - m && a.z + pt.z0 < b.z1 + m && obbAabb(x, y, c, s, pt.hw, pt.hd, bb)) return true;
+  return false;
+}
+const touchesKill = a => { for (const b of SOLID) if (b.kill && touchesBox(a, a.x, a.y, b, 1)) return true; return false; };
+function depenetrate(a) { // turning can push an arm into a wall: slide the body back out
+  for (let k = 0; k < 10; k++) {
+    const b = blockedAt(a, a.x, a.y); if (!b) return;
+    const dx = a.x - b.cx, dy = a.y - b.cy, hx = (b.x1 - b.x0) / 2, hy = (b.y1 - b.y0) / 2;
+    if (Math.abs(dx) / hx > Math.abs(dy) / hy) a.x += (dx < 0 ? -1 : 1) * 1.5; else a.y += (dy < 0 ? -1 : 1) * 1.5;
+  }
+}
+function trussAt(a) { for (const b of TRUSS) if (overlapXY(b, a.x, a.y, RADIUS - 2) && a.z < b.z1 - 1 && a.z + BODY_H > b.z0 + 4) return b; return null; }
+function floorBelow(x, y, zRef) { // top of the highest box under (x,y) that is not above zRef
+  let f = -1e9; for (const b of SOLID) if (overlapXY(b, x, y, 2) && b.z1 <= zRef && b.z1 > f) f = b.z1; return f;
+}
+function physZ(a, grav) { // gravity, landing on box tops, bumping heads on box undersides
+  const prev = a.z;
+  if (grav) { a.vz -= GRAVITY; a.z += a.vz; } else a.vz = 0;
+  let fl = -1e9, ce = 1e9, fb = null;
+  for (const b of SOLID) {
+    if (!overlapXY(b, a.x, a.y, RADIUS)) continue;
+    if (b.z1 <= prev + STEP) { if (b.z1 > fl) { fl = b.z1; fb = b; } }
+    else if (b.z0 >= prev + BODY_H - 1 && b.z0 < ce) ce = b.z0;
+  }
+  a.ground = false; a.floorBox = null;
+  if (a.z <= fl) { a.z = fl; if (a.vz < 0) a.vz = 0; a.ground = true; a.floorBox = fb; }
+  if (a.z + BODY_H > ce && a.vz >= 0 && ce < 1e9) { a.z = ce - BODY_H; if (a.vz > 0) a.vz = 0; }
+}
+function raycast(ox, oy, oz, dx, dy, dz, tmax) { // nearest solid box hit by a ray
+  let best = null, bt = tmax, bax = -1, bsg = 0; const o = [ox, oy, oz], d = [dx, dy, dz];
+  for (const b of SOLID) {
+    const mn = [b.x0, b.y0, b.z0], mx = [b.x1, b.y1, b.z1]; let t0 = 0, t1 = bt, ax = -1, sg = 0, ok = true;
+    for (let i = 0; i < 3 && ok; i++) {
+      if (Math.abs(d[i]) < 1e-9) { if (o[i] < mn[i] || o[i] > mx[i]) ok = false; continue; }
+      let ta = (mn[i] - o[i]) / d[i], tb = (mx[i] - o[i]) / d[i], s = d[i] > 0 ? -1 : 1; if (ta > tb) { const t = ta; ta = tb; tb = t; }
+      if (ta > t0) { t0 = ta; ax = i; sg = s; } if (tb < t1) t1 = tb; if (t0 > t1) ok = false;
+    }
+    if (ok && t0 < bt) { best = b; bt = t0; bax = ax; bsg = sg; }
+  }
+  return best ? { t: bt, b: best, ax: bax, sg: bsg } : null;
+}
+const losClear = (a, b) => { const dx = b.x - a.x, dy = b.y - a.y, dz = (b.z + 24) - (a.z + 24), L = Math.hypot(dx, dy, dz) || 1; return !raycast(a.x, a.y, a.z + 24, dx / L, dy / L, dz / L, L - 4); };
+
+// Character-vs-character collision (setting "Character collisions"): a move is refused if it pushes two hitboxes further into each other
+function othersOf(a) { const L = []; if (a !== player && !player.dead && !player.noclip) L.push(player); if (a !== bot && botOn() && !bot.dead) L.push(bot); if (a !== remote && remoteShown() && !remote.dead) L.push(remote); return L; }
+const BODY_PARTS = [{ hw: 14, hd: 3.5, z0: 14, z1: 28 }, { hw: 4.2, hd: 4.2, z0: 28, z1: 35.5 }, { hw: 7, hd: 3.5, z0: 0, z1: 14 }]; // torso+arms, head, legs of the blocky body
+function rectsOverlap(ax, ay, aa, ahw, ahd, bx, by, ba, bhw, bhd) { // two rotated rectangles (separating-axis test)
+  const fa = [Math.cos(aa), Math.sin(aa)], ra = [-fa[1], fa[0]], fb = [Math.cos(ba), Math.sin(ba)], rb = [-fb[1], fb[0]], dx = bx - ax, dy = by - ay;
+  for (const u of [fa, ra, fb, rb]) {
+    const A = ahd * Math.abs(u[0] * fa[0] + u[1] * fa[1]) + ahw * Math.abs(u[0] * ra[0] + u[1] * ra[1]), B = bhd * Math.abs(u[0] * fb[0] + u[1] * fb[1]) + bhw * Math.abs(u[0] * rb[0] + u[1] * rb[1]);
+    if (Math.abs(dx * u[0] + dy * u[1]) >= A + B) return false;
+  }
+  return true;
+}
+function bodiesOverlap(a, x, y, o, m) { // do the real bodies (not the wall box) of a (placed at x,y) and o touch? m = extra reach
+  for (const pa of BODY_PARTS) for (const pb of BODY_PARTS) {
+    if (a.z + pa.z0 - m >= o.z + pb.z1 || a.z + pa.z1 + m <= o.z + pb.z0) continue;
+    if (rectsOverlap(x, y, a.angle, pa.hw + m, pa.hd + m, o.x, o.y, o.angle, pb.hw, pb.hd)) return true;
+  }
+  return false;
+}
+function charHit(a, x, y) { // you may enter another character's box; only touching its actual body blocks you
+  if (!S.charCol) return false;
+  for (const o of othersOf(a)) {
+    if (Math.abs(a.z - o.z) >= BODY_H) continue;
+    if (!bodiesOverlap(a, x, y, o, 0)) continue;
+    if (!bodiesOverlap(a, a.x, a.y, o, 0)) return true;                                       // would newly touch the body
+    if (Math.hypot(x - o.x, y - o.y) < Math.hypot(a.x - o.x, a.y - o.y)) return true;        // already inside: moving apart is allowed
+  }
+  return false;
+}
+const stand = (a, x, y) => {
+  const nb = blockedAt(a, x, y);
+  if (nb) { // a wall only stops you when your body would newly touch it (or you move deeper into it)
+    if (!blockedAt(a, a.x, a.y)) return false;
+    if (Math.hypot(x - nb.cx, y - nb.cy) <= Math.hypot(a.x - nb.cx, a.y - nb.cy)) return false;
+  }
+  return !charHit(a, x, y);
+};
+// If a move is blocked, look for the smallest sideways shift (at most half the hitbox width) that clears the wall corner, and slide that way
+function nudge(a, x, y, alongX) {
+  for (let d = 1; d <= RADIUS; d++) for (const s of [1, -1]) if (stand(a, alongX ? x + d * s : x, alongX ? y : y + d * s)) return s * d;
+  return 0;
+}
+function moveActor(a, mx, my) {
+  let moved = false;
+  if (mx) {
+    if (stand(a, a.x + mx, a.y)) { a.x += mx; moved = true; }
+    else { const d = nudge(a, a.x + mx, a.y, false); if (d) { const s = Math.sign(d) * Math.min(Math.abs(d), Math.max(1.2, Math.abs(mx))); if (stand(a, a.x, a.y + s)) { a.y += s; moved = true; } } }
+  }
+  if (my) {
+    if (stand(a, a.x, a.y + my)) { a.y += my; moved = true; }
+    else { const d = nudge(a, a.x, a.y + my, true); if (d) { const s = Math.sign(d) * Math.min(Math.abs(d), Math.max(1.2, Math.abs(my))); if (stand(a, a.x + s, a.y)) { a.x += s; moved = true; } } }
+  }
+  return moved;
+}
+
+// ---------- 3D software renderer ----------
+// shade a texel: b = brightness, f = fog amount (1 = clear, 0 = fully fogged), l = torch light (0..1)
+function shade(c, b, f, l) {
+  if (!l) { const k = b * f, g = 1 - f; return (0xFF000000 | ((((c >> 16 & 255) * k + FB * g) | 0) << 16) | ((((c >> 8 & 255) * k + FG * g) | 0) << 8) | (((c & 255) * k + FR * g) | 0)) >>> 0; }
+  { b *= 1 + .28 * l; f += (1 - f) * Math.min(1, l * .6); }
+  const k = b * f, g = 1 - f;
+  let r = (c & 255) * k + FR * g, gg = (c >> 8 & 255) * k + FG * g, bb = (c >> 16 & 255) * k + FB * g;
+  if (l) { r += l * 22; gg += l * 10; }
+  if (r > 255) r = 255; if (gg > 255) gg = 255; if (bb > 255) bb = 255;
+  return (0xFF000000 | ((bb | 0) << 16) | ((gg | 0) << 8) | (r | 0)) >>> 0;
+}
+// does a straight run of pixels on a face come within reach of any light? (lets most spans skip per-pixel lighting)
+function segLit(ax, cc, U0, V0, U1, V1) {
+  let x0, y0, z0, x1, y1, z1;
+  if (ax === 2) { x0 = U0; y0 = V0; z0 = cc; x1 = U1; y1 = V1; z1 = cc; }
+  else if (ax === 0) { x0 = cc; y0 = U0; z0 = -V0; x1 = cc; y1 = U1; z1 = -V1; }
+  else { x0 = U0; y0 = cc; z0 = -V0; x1 = U1; y1 = cc; z1 = -V1; }
+  const dx = x1 - x0, dy = y1 - y0, dz = z1 - z0, L2 = dx * dx + dy * dy + dz * dz;
+  for (let i = 0; i < LS.length; i++) {
+    const s = LS[i]; let t = L2 > 1e-9 ? ((s[0] - x0) * dx + (s[1] - y0) * dy + (s[2] - z0) * dz) / L2 : 0; t = t < 0 ? 0 : t > 1 ? 1 : t;
+    const px = x0 + dx * t - s[0], py = y0 + dy * t - s[1], pz = z0 + dz * t - s[2];
+    if (px * px + py * py + pz * pz < s[3] * s[3]) return true;
+  }
+  return false;
+}
+// Rasterise one screen-space triangle. Vertex = [x, y, 1/depth, u/depth, v/depth]; M = material.
+// M.mode 0 textured (perspective-correct, depth-tested), 1 flat colour, 2 multiply decal (soft shadows).
+function rasterTri(p0, p1, p2, M) {
+  const ymin = Math.min(p0[1], p1[1], p2[1]), ymax = Math.max(p0[1], p1[1], p2[1]);
+  const ya = Math.max(0, Math.ceil(ymin - .5)), yb = Math.min(H - 1, Math.floor(ymax - .5)); if (ya > yb) return;
+  st.tris++;
+  const zbl = zb, bufl = buf, Wl = W, fk = fogK, fr = FR, fg = FG, fb = FB, nz = !!M.nz;
+  const P = [p0, p1, p2], mode = M.mode, td = M.td, tm = M.tm, tw = M.tw, ts = M.ts, bright = M.b, at = M.at, col = M.col, L0 = M.L, pxl = M.pxl, ax = M.ax, cc = M.cc, alpha = M.alpha || 0;
+  for (let y = ya; y <= yb; y++) {
+    const yc = y + .5; let xl = 1e30, xr = -1e30, al = 0, ul = 0, vl = 0, ar = 0, ur = 0, vr = 0;
+    for (let e = 0; e < 3; e++) {
+      const A = P[e], B = P[e === 2 ? 0 : e + 1], y1 = A[1], y2 = B[1];
+      if (!((yc >= y1 && yc < y2) || (yc >= y2 && yc < y1))) continue;
+      const t = (yc - y1) / (y2 - y1), x = A[0] + (B[0] - A[0]) * t, a = A[2] + (B[2] - A[2]) * t, u = A[3] + (B[3] - A[3]) * t, v = A[4] + (B[4] - A[4]) * t;
+      if (x < xl) { xl = x; al = a; ul = u; vl = v; } if (x > xr) { xr = x; ar = a; ur = u; vr = v; }
+    }
+    if (xr < xl) continue;
+    const xa = Math.max(0, Math.ceil(xl - .5)), xb = Math.min(Wl - 1, Math.floor(xr - .5)); if (xa > xb) continue;
+    const inv = 1 / (xr - xl || 1), da = (ar - al) * inv, du = (ur - ul) * inv, dv = (vr - vl) * inv, s0 = xa + .5 - xl;
+    let a = al + da * s0, u = ul + du * s0, v = vl + dv * s0, idx = y * Wl + xa;
+    if (mode === 0) {
+      let lit = pxl;
+      if (lit) { const n = xb - xa, w0 = 1 / a, aE = a + da * n, w1 = 1 / aE; lit = segLit(ax, cc, u * w0, v * w0, (u + du * n) * w1, (v + dv * n) * w1); }
+      for (let x = xa; x <= xb; x++, idx++, a += da, u += du, v += dv) {
+        if (a <= zbl[idx]) continue;
+        const w = 1 / a, c = td[(((v * w * ts + 8192) | 0) & tm) * tw + (((u * w * ts + 8192) | 0) & tm)];
+        if (at && (c >>> 24) < 128) continue;
+        zbl[idx] = a;
+        let f = 1 - w * fk; if (f < 0) f = 0;
+        if (lit) {
+          const U = u * w, V = v * w, l = ax === 2 ? lightAt(U, V, cc) : ax === 0 ? lightAt(cc, U, -V) : lightAt(U, cc, -V);
+          bufl[idx] = shade(c, bright, f, l);
+        } else {
+          const k = bright * f, g = 1 - f;
+          bufl[idx] = 0xFF000000 | ((((c >> 16 & 255) * k + fb * g) | 0) << 16) | ((((c >> 8 & 255) * k + fg * g) | 0) << 8) | (((c & 255) * k + fr * g) | 0);
+        }
+      }
+    } else if (mode === 1) {
+      for (let x = xa; x <= xb; x++, idx++, a += da) {
+        if (!nz && a <= zbl[idx]) continue;
+        if (!nz) zbl[idx] = a;
+        let f = 1 - fk / a; if (f < 0) f = 0;
+        if (L0) bufl[idx] = shade(col, bright, f, L0);
+        else { const k = bright * f, g = 1 - f; bufl[idx] = 0xFF000000 | ((((col >> 16 & 255) * k + fb * g) | 0) << 16) | ((((col >> 8 & 255) * k + fg * g) | 0) << 8) | (((col & 255) * k + fr * g) | 0); }
+      }
+    } else if (mode === 3) { // translucent colour (force-field): blended over what is already drawn, hidden behind nearer geometry
+      const sr = M.sr, sg = M.sg, sb = M.sb, al = M.alpha, ia = 1 - al;
+      for (let x = xa; x <= xb; x++, idx++, a += da) {
+        if (a <= zbl[idx]) continue;
+        const d = bufl[idx];
+        bufl[idx] = 0xFF000000 | ((((d >> 16 & 255) * ia + sb * al) | 0) << 16) | ((((d >> 8 & 255) * ia + sg * al) | 0) << 8) | (((d & 255) * ia + sr * al) | 0);
+      }
+    } else {
+      for (let x = xa; x <= xb; x++, idx++, a += da, u += du, v += dv) {
+        if (a < zbl[idx] * .985) continue;               // something nearer covers this pixel
+        const w = 1 / a, c = td[((((v * w) + 8192) | 0) & tm) * tw + ((((u * w) + 8192) | 0) & tm)];
+        const k = 1 - (c >>> 24) / 255 * alpha, d = bufl[idx];
+        bufl[idx] = 0xFF000000 | (((d >> 16 & 255) * k | 0) << 16) | (((d >> 8 & 255) * k | 0) << 8) | ((d & 255) * k | 0);
+      }
+    }
+  }
+}
+// transform a world-space polygon [x,y,z,u,v]..., clip against the near plane, project and rasterise it
+function drawPoly(C, pts, M) {
+  const n = pts.length, vs = []; let allIn = true;
+  for (let i = 0; i < n; i++) {
+    const p = pts[i], rx = p[0] - C.cx, ry = p[1] - C.cy, d = rx * C.dirX + ry * C.dirY;
+    if (d < NEAR) allIn = false;
+    vs.push([rx * C.rX + ry * C.rY, p[2] - C.camZ, d, p[3], p[4]]);
+  }
+  let poly = vs;
+  if (!allIn) {
+    poly = [];
+    for (let i = 0; i < n; i++) {
+      const a = vs[i], b = vs[(i + 1) % n], ia = a[2] >= NEAR, ib = b[2] >= NEAR;
+      if (ia) poly.push(a);
+      if (ia !== ib) { const t = (NEAR - a[2]) / (b[2] - a[2]); poly.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, NEAR, a[3] + (b[3] - a[3]) * t, a[4] + (b[4] - a[4]) * t]); }
+    }
+    if (poly.length < 3) return;
+  }
+  const hw = W / 2, k = C.proj, hz = C.horizon, P = [];
+  let mnx = 1e9, mxx = -1e9, mny = 1e9, mxy = -1e9;
+  for (const v of poly) {
+    const a = 1 / v[2], X = hw + v[0] * k * a, Y = hz - v[1] * k * a;
+    if (X < mnx) mnx = X; if (X > mxx) mxx = X; if (Y < mny) mny = Y; if (Y > mxy) mxy = Y;
+    P.push([X, Y, a, v[3] * a, v[4] * a]);
+  }
+  if (mxx < 0 || mnx > W || mxy < 0 || mny > H) return;
+  st.faces++;
+  for (let i = 1; i < P.length - 1; i++) rasterTri(P[0], P[i], P[i + 1], M);
+}
+// screen-space bounds of a world box (null if it is entirely behind the camera)
+function projBox(C, x0, y0, z0, x1, y1, z1) {
+  let mnX = 1e9, mxX = -1e9, mnY = 1e9, mxY = -1e9, dmin = 1e9, front = 0;
+  for (let i = 0; i < 8; i++) {
+    const x = i & 1 ? x1 : x0, y = i & 2 ? y1 : y0, z = i & 4 ? z1 : z0, rx = x - C.cx, ry = y - C.cy, d = rx * C.dirX + ry * C.dirY;
+    if (d < NEAR) continue; front++; if (d < dmin) dmin = d;
+    const X = W / 2 + (rx * C.rX + ry * C.rY) * C.proj / d, Y = C.horizon - (z - C.camZ) * C.proj / d;
+    if (X < mnX) mnX = X; if (X > mxX) mxX = X; if (Y < mnY) mnY = Y; if (Y > mxY) mxY = Y;
+  }
+  if (!front) return null;
+  if (front < 8) { mnX = -1e9; mxX = 1e9; mnY = -1e9; mxY = 1e9; dmin = Math.max(NEAR, dmin); } // partly behind the camera: bounds unknown
+  return { x0: mnX, x1: mxX, y0: mnY, y1: mxY, dmin };
+}
+// occlusion test: true if everything sampled inside the rectangle is covered by nearer geometry
+function occluded(r) {
+  const a = 1 / r.dmin, x0 = Math.max(0, r.x0 | 0), x1 = Math.min(W - 1, Math.ceil(r.x1)), y0 = Math.max(0, r.y0 | 0), y1 = Math.min(H - 1, Math.ceil(r.y1));
+  const sx = Math.max(1, Math.ceil((x1 - x0) / 8)), sy = Math.max(1, Math.ceil((y1 - y0) / 8));
+  for (let y = y0; y <= y1; y += sy) for (let x = x0; x <= x1; x += sx) if (zb[y * W + x] <= a * 1.001) return false;
+  return true;
+}
+const offscreen = r => r.x1 < 0 || r.x0 > W || r.y1 < 0 || r.y0 > H;
+function faceNearLight(bb) {
+  for (let i = 0; i < LS.length; i++) {
+    const s = LS[i], dx = Math.max(bb[0] - s[0], 0, s[0] - bb[1]), dy = Math.max(bb[2] - s[1], 0, s[1] - bb[3]), dz = Math.max(bb[4] - s[2], 0, s[2] - bb[5]);
+    if (dx * dx + dy * dy + dz * dz < s[3] * s[3]) return true;
+  }
+  return false;
+}
+function renderBoxes(C, now) { // frustum cull, sort front to back, back-face cull, rasterise
+  const vis = [], cam = [C.cx, C.cy, C.camZ], pulse = 1 + .2 * Math.sin(now * .006); st.boxesTot = boxes.length; st.boxes = 0;
+  for (const b of boxes) {
+    const r = projBox(C, b.x0, b.y0, b.z0, b.x1, b.y1, b.z1); if (!r || offscreen(r)) continue;
+    b.d2 = (b.cx - C.cx) ** 2 + (b.cy - C.cy) ** 2 + (b.cz - C.camZ) ** 2; vis.push(b);
+  }
+  vis.sort((a, b) => a.d2 - b.d2);
+  for (const b of vis) {
+    st.boxes++;
+    for (const f of b.faces) {
+      if (f.sg * (cam[f.ax] - f.c) <= 0) continue; // face points away from the camera
+      const M = f.M; M.pxl = LS.length > 0 && faceNearLight(f.bb); M.L = 0; M.b = b.glow ? f.M.nl * pulse : f.M.nl;
+      drawPoly(C, f.pts, M);
+    }
+  }
+}
+function fillSky(C) { // skybox: fill every pixel that no geometry covered
+  const k = C.proj, hz = C.horizon, ca = C.camA, TAU = Math.PI * 2, haze = S.fog, d = SKY.d;
+  for (let x = 0; x < W; x++) {
+    const u = (x + .5 - W / 2) / k; skyCu[x] = Math.atan(u); skyIv[x] = 1 / Math.sqrt(1 + u * u);
+    let az = (ca + skyCu[x]) / TAU; az -= Math.floor(az); skyCol[x] = Math.min(SKW - 1, (az * SKW) | 0);
+  }
+  for (let y = 0; y < H; y++) {
+    const vy = (hz - (y + .5)) / k, row0 = y * W;
+    for (let x = 0; x < W; x++) {
+      const idx = row0 + x; if (zb[idx] !== 0) continue;
+      const t = vy * skyIv[x]; let r = ((1.7 - t) * (SKH - 1) / 2.2) | 0; if (r < 0) r = 0; else if (r > SKH - 1) r = SKH - 1;
+      let c = d[r * SKW + skyCol[x]];
+      if (haze && t < .16) { // blend toward the fog colour near the horizon
+        const m = (t > 0 ? 1 - t / .16 : 1) * .85, g = 1 - m;
+        c = (0xFF000000 | ((((c >> 16 & 255) * g + FB * m) | 0) << 16) | ((((c >> 8 & 255) * g + FG * m) | 0) << 8) | (((c & 255) * g + FR * m) | 0)) >>> 0;
+      }
+      buf[idx] = c;
+    }
+  }
+}
+function fillFlat() { // skybox off: plain colour behind the world (fog colour when fog is on)
+  const c = S.fog ? rgb(FR, FG, FB) : rgb(34, 44, 60);
+  for (let i = 0, n = zb.length; i < n; i++) if (zb[i] === 0) buf[i] = c;
+}
+// solid-colour box (used for the far/low-detail bot)
+const NLF = [[0, 1, 1], [0, -1, .6], [1, 1, .72], [1, -1, .92]];
+function drawFlatBox(C, x0, y0, z0, x1, y1, z1, col, L) {
+  const cam = [C.cx, C.cy, C.camZ], M = { mode: 1, col, b: 1, L, pxl: false, at: false };
+  const f = [[0, 1, x1, [[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]], .8], [0, -1, x0, [[x0, y1, z0], [x0, y0, z0], [x0, y0, z1], [x0, y1, z1]], .6],
+    [1, 1, y1, [[x1, y1, z0], [x0, y1, z0], [x0, y1, z1], [x1, y1, z1]], .72], [1, -1, y0, [[x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z1]], .92], [2, 1, z1, [[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]], 1]];
+  for (const [ax, sg, c, q, b] of f) { if (sg * (cam[ax] - c) <= 0) continue; M.b = b; drawPoly(C, q.map(p => [p[0], p[1], p[2], 0, 0]), M); }
+}
+const FACES = [
+  ["f", [[-1, 1, 1], [1, 1, 1], [1, -1, 1], [-1, -1, 1]], [0, 0, 1]],
+  ["b", [[1, 1, -1], [-1, 1, -1], [-1, -1, -1], [1, -1, -1]], [0, 0, -1]],
+  ["r", [[1, 1, -1], [1, 1, 1], [1, -1, 1], [1, -1, -1]], [1, 0, 0]],
+  ["l", [[-1, 1, 1], [-1, 1, -1], [-1, -1, -1], [-1, -1, 1]], [-1, 0, 0]],
+  ["t", [[-1, 1, -1], [1, 1, -1], [1, 1, 1], [-1, 1, 1]], [0, 1, 0]],
+  ["u", [[-1, -1, 1], [1, -1, 1], [1, -1, -1], [-1, -1, -1]], [0, -1, 0]]
+];
+const packCol = h => rgb(parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16));
+const LIGHT = (() => { const l = [.3, .4, .85], m = Math.hypot(...l); return l.map(v => v / m); })();
+const rotFor = (ang, roll) => { // rotation about the x axis (swing) with an optional roll about z
+  const c = Math.cos(ang), s = Math.sin(ang), r = roll || 0, cr = Math.cos(r), sr = Math.sin(r);
+  return v => { const y = v[1] * c + v[2] * s, z = -v[1] * s + v[2] * c; return r ? [v[0] * cr - y * sr, v[0] * sr + y * cr, z] : [v[0], y, z]; };
+};
+const bil = (w, u, v) => [0, 1, 2].map(i => { const t = w[0][i] + (w[1][i] - w[0][i]) * u, b = w[3][i] + (w[2][i] - w[3][i]) * u; return t + (b - t) * v; });
+const toolPos = [0, 0, 0];
+function drawActor(a, C) { // a blocky character built from six box parts (+ a held tool), rasterised in 3D
+  const ca = Math.cos(a.angle), sa = Math.sin(a.angle), dw = v => [-sa * v[0] + ca * v[2], ca * v[0] + sa * v[2], v[1]];
+  const Lc = lightAt(a.x, a.y, a.z + 18), sw = Math.sin(a.phase) * a.amp, rl = {}, hh = a.heldType ? TOOLS[a.heldType] : null;
+  let th;
+  if (a.dead) th = { armL: .3, armR: -.3, legL: .1, legR: -.1 };
+  else if (a.isBot) { const k = 1.5 - (a.atk ? .9 * Math.sin(Math.PI * a.atk / 20) : 0); th = { armL: k, armR: k, legL: sw, legR: -sw }; } // arms out + swing
+  else if (a.emote) { th = { armL: -sw, armR: 2.9, legL: sw, legR: -sw }; rl.armR = Math.sin(a.emote.t * .35) * .55; } // /n greet
+  else if (a.climbing) { const c2 = Math.sin(a.phase); th = { armL: 2.9 - Math.max(0, c2) * .7, armR: 2.9 - Math.max(0, -c2) * .7, legL: c2 * .7, legR: -c2 * .7 }; } // climbing a truss
+  else if (a.flying) th = { armL: 1.5, armR: 1.5, legL: .15, legR: -.15 };
+  else if (!a.ground) th = { armL: 2.3, armR: 2.7, legL: .5, legR: -.35 };
+  else th = { armL: -sw, armR: sw, legL: sw, legR: -sw };
+  th.head = 0; th.torso = 0; th.tool = th.armR;
+  const parts = a.parts.slice(); let sprite = false;
+  if (hh && !a.dead) {
+    if (!a.emote) { const u = a.useT ? Math.sin(Math.PI * a.useT / 20) : 0; th.armR = .5 + 1.2 * u; th.tool = 1.2 + 1.0 * u; } // arm hangs low, tool held upright
+    if (S.models3d && MODELS[a.heldType]) for (const mp of MODELS[a.heldType].parts) parts.push(mp); else sprite = true; // 3D model, or the classic flat sprite
+  }
+  const cf = Math.cos(a.fall), sf = Math.sin(a.fall), lift = 3.6 * sf, rb = v => [v[0], v[1] * cf + v[2] * sf, -v[1] * sf + v[2] * cf]; // death: tip over backwards
+  const eye = [C.cx, C.cy, C.camZ]; toolPos[0] = toolPos[1] = toolPos[2] = 0;
+  for (const pt of parts) {
+    const key = pt.ang || pt.id, rot = rotFor(pt.tool ? th.tool : th[key], rl[key]), rotA = pt.tool ? rotFor(th.armR, rl.armR) : null, colr = packCol(pt.bands[0][2]);
+    for (const [k, cs, nrm] of FACES) {
+      const w = cs.map(q => {
+        let o;
+        if (pt.tool) { const h0 = rotA([0, pt.oy, 0]), b0 = rot([q[0] * pt.hs[0] + (pt.ox || 0), q[1] * pt.hs[1] + (pt.cy || 0), (pt.oz || 0) + q[2] * pt.hs[2]]); o = [h0[0] + b0[0], h0[1] + b0[1], h0[2] + b0[2]]; }
+        else o = rot([q[0] * pt.hs[0], pt.oy + q[1] * pt.hs[1], (pt.oz || 0) + q[2] * pt.hs[2]]);
+        const lv = rb([pt.px + o[0], pt.py + o[1], o[2]]); lv[1] += lift;
+        const d = dw(lv); return [a.x + d[0], a.y + d[1], a.z + d[2]];
+      });
+      const nw = dw(rb(rot(nrm))), m = [0, 1, 2].map(i => (w[0][i] + w[1][i] + w[2][i] + w[3][i]) / 4);
+      if (pt.flame) { toolPos[0] += m[0] / 6; toolPos[1] += m[1] / 6; toolPos[2] += m[2] / 6; }
+      if (nw[0] * (eye[0] - m[0]) + nw[1] * (eye[1] - m[1]) + nw[2] * (eye[2] - m[2]) <= 0) continue; // back-face cull
+      const b = .45 + .55 * Math.max(0, nw[0] * LIGHT[0] + nw[1] * LIGHT[1] + nw[2] * LIGHT[2]);
+      drawPoly(C, w.map(p => [p[0], p[1], p[2], 0, 0]), pt.emi ? { mode: 1, col: colr, b: 1, L: .55, pxl: false, at: false } : { mode: 1, col: colr, b, L: Lc, pxl: false, at: false }); // a torch head glows by itself
+      if (pt.id === "head" && k === "f") { // face details (small quads just in front of the head)
+        const quad = (u0, v0, u1, v1, c) => drawPoly(C, [[u0, v0], [u1, v0], [u1, v1], [u0, v1]].map(([u, v]) => { const p = bil(w, u, v); return [p[0] + nw[0] * .15, p[1] + nw[1] * .15, p[2] + nw[2] * .15, 0, 0]; }), { mode: 1, col: c, b: 1, L: 0, pxl: false, at: false });
+        const dark = rgb(17, 17, 17);
+        if (a.isBot) { const red = rgb(230, 20, 20); quad(.27, .3, .36, .5, red); quad(.64, .3, .73, .5, red); quad(.24, .72, .33, .8, dark); quad(.33, .64, .67, .72, dark); quad(.67, .72, .76, .8, dark); }
+        else { quad(.27, .28, .36, .52, dark); quad(.64, .28, .73, .52, dark); quad(.24, .6, .33, .68, dark); quad(.33, .68, .67, .76, dark); quad(.67, .6, .76, .68, dark); }
+      }
+    }
+  }
+  if (sprite && hh && !a.dead) { // classic 2D mode: the held item is a flat sprite in the hand
+    const rA = rotFor(th.armR, rl.armR), rT = rotFor(th.tool, rl.armR), h0 = rA([0, -14, 0]), t0 = rT([0, 0, 9]);
+    const lv = rb([10.5 + h0[0] + t0[0], 28 + h0[1] + t0[1], h0[2] + t0[2]]); lv[1] += lift; const d = dw(lv), wx = a.x + d[0], wy = a.y + d[1], wz = a.z + d[2];
+    toolPos[0] = wx; toolPos[1] = wy; toolPos[2] = wz; const hx = C.rX * 7, hy = C.rY * 7;
+    drawPoly(C, [[wx - hx, wy - hy, wz + 7, 0, 0], [wx + hx, wy + hy, wz + 7, 16, 0], [wx + hx, wy + hy, wz - 7, 16, 16], [wx - hx, wy - hy, wz - 7, 0, 16]], { mode: 0, td: ICOND[a.heldType].d, tm: 15, tw: 16, ts: 1, b: 1, L: Lc, pxl: false, at: true, ax: -1, cc: 0 });
+  }
+}
+// everything that stands in the world: culled (frustum + occlusion), detail level chosen by size
+const PIECES = [["head", 0, 31.5, [4.2, 3.5, 4.2]], ["torso", 0, 21, [7, 7, 3.5]], ["armL", -10.5, 21, [3.5, 7, 3.5]], ["armR", 10.5, 21, [3.5, 7, 3.5]], ["legL", -3.5, 7, [3.5, 7, 3.5]], ["legR", 3.5, 7, [3.5, 7, 3.5]]];
+function breakApart(a) { // like Roblox: the body falls apart into its six parts, which tumble onto the ground
+  const ca = Math.cos(a.angle), sa = Math.sin(a.angle), r = () => Math.random() - .5;
+  a.debris = PIECES.map((P, i) => ({ x: a.x - sa * P[1], y: a.y + ca * P[1], z: a.z + P[2], vx: -sa * P[1] * .07 + r() * 2.2, vy: ca * P[1] * .07 + r() * 2.2, vz: 2.2 + Math.random() * 2.4,
+    yaw: a.angle, pitch: 0, roll: 0, wp: r() * .5, wr: r() * .5, wy: r() * .25, hs: P[3], col: a.parts[i].bands[0][2], rest: false }));
+}
+function dXf(d, v) { // part space -> world offset (tumble about the local x and z axes, then yaw)
+  let c = Math.cos(d.pitch), s = Math.sin(d.pitch); const y1 = v[1] * c + v[2] * s, z1 = -v[1] * s + v[2] * c;
+  c = Math.cos(d.roll); s = Math.sin(d.roll); const x2 = v[0] * c - y1 * s, y2 = v[0] * s + y1 * c, ca = Math.cos(d.yaw), sa = Math.sin(d.yaw);
+  return [-sa * x2 + ca * z1, ca * x2 + sa * z1, y2];
+}
+function debrisMinZ(d) { let m = 1e9; for (let i = 0; i < 8; i++) { const v = dXf(d, [i & 1 ? d.hs[0] : -d.hs[0], i & 2 ? d.hs[1] : -d.hs[1], i & 4 ? d.hs[2] : -d.hs[2]]); if (v[2] < m) m = v[2]; } return m; }
+function stepDebris(a) {
+  if (!a.debris) return;
+  for (const d of a.debris) {
+    if (!d.rest) { d.vz -= GRAVITY; d.x += d.vx; d.y += d.vy; d.z += d.vz; d.pitch += d.wp; d.roll += d.wr; d.yaw += d.wy; }
+    else { const h = Math.PI / 2; d.pitch += (Math.round(d.pitch / h) * h - d.pitch) * .3; d.roll += (Math.round(d.roll / h) * h - d.roll) * .3; } // settle flat on a face
+    const fl = floorBelow(d.x, d.y, d.z + 24), low = d.z + debrisMinZ(d);
+    if (fl > -100 && low <= fl) {
+      d.z += fl - low;
+      if (!d.rest) {
+        if (d.vz < -1.2) { d.vz *= -.3; d.vx *= .65; d.vy *= .65; d.wp *= .6; d.wr *= .6; d.wy *= .5; }
+        else { d.vz = 0; d.vx *= .7; d.vy *= .7; d.wp *= .6; d.wr *= .6; if (Math.hypot(d.vx, d.vy) < .12 && Math.abs(d.wp) + Math.abs(d.wr) < .03) d.rest = true; }
+      }
+    }
+  }
+}
+function drawDebris(a, C) {
+  const eye = [C.cx, C.cy, C.camZ];
+  for (const d of a.debris) {
+    const colr = packCol(d.col), Lc = lightAt(d.x, d.y, d.z);
+    for (const [k, cs, nrm] of FACES) {
+      const w = cs.map(q => { const o = dXf(d, [q[0] * d.hs[0], q[1] * d.hs[1], q[2] * d.hs[2]]); return [d.x + o[0], d.y + o[1], d.z + o[2]]; });
+      const nw = dXf(d, nrm), m = [0, 1, 2].map(i => (w[0][i] + w[1][i] + w[2][i] + w[3][i]) / 4);
+      if (nw[0] * (eye[0] - m[0]) + nw[1] * (eye[1] - m[1]) + nw[2] * (eye[2] - m[2]) <= 0) continue;
+      drawPoly(C, w.map(p => [p[0], p[1], p[2], 0, 0]), { mode: 1, col: colr, b: .45 + .55 * Math.max(0, nw[0] * LIGHT[0] + nw[1] * LIGHT[1] + nw[2] * LIGHT[2]), L: Lc, pxl: false, at: false });
+    }
+  }
+}
+function drawCharacter(a, C) { // returns 0 full detail, 1 flat colour, 2 culled
+  if (a.debris) { const q = projBox(C, a.x - 80, a.y - 80, a.z - 4, a.x + 80, a.y + 80, a.z + 50); if (!q || offscreen(q)) return 2; drawDebris(a, C); return 0; }
+  const r = projBox(C, a.x - 20, a.y - 20, a.z, a.x + 20, a.y + 20, a.z + BODY_H + 4); if (!r || offscreen(r)) return 2;
+  if (occluded(r)) return 2;
+  if (a.isBot && r.y1 - r.y0 < 30) { drawFlatBox(C, a.x - 7, a.y - 7, a.z, a.x + 7, a.y + 7, a.z + (a.dead ? 9 : BODY_H), packCol("#8b1a1a"), lightAt(a.x, a.y, a.z + 18)); return 1; }
+  drawActor(a, C); return 0;
+}
+function drawBillboards(C, now) { // world items as camera-facing textured quads
+  const list = []; st.itemsTot = items.length; st.items = 0;
+  for (const it of items) {
+    const z = it.z + 13 + Math.sin(now * .003 + it.x) * 2.5, r = projBox(C, it.x - 7, it.y - 7, z - 7, it.x + 7, it.y + 7, z + 7);
+    if (!r || offscreen(r) || occluded(r)) continue;
+    list.push([it, z]);
+  }
+  for (const [it, z] of list) {
+    st.items++;
+    const hx = C.rX * 7, hy = C.rY * 7, M = { mode: 0, td: ICOND[it.type].d, tm: 15, tw: 16, ts: 1, b: 1, L: lightAt(it.x, it.y, z), pxl: false, at: true, ax: -1, cc: 0 };
+    drawPoly(C, [[it.x - hx, it.y - hy, z + 7, 0, 0], [it.x + hx, it.y + hy, z + 7, 16, 0], [it.x + hx, it.y + hy, z - 7, 16, 16], [it.x - hx, it.y - hy, z - 7, 0, 16]], M);
+  }
+}
+// soft ground shadows are drawn as multiply decals: strips (dark edge = v 0 touches the object) + rounded corners + a solid middle
+let vmFlame = null;
+function drawItems3D(C, now) { // world items as small spinning, bobbing 3D models
+  const list = []; st.itemsTot = items.length; st.items = 0;
+  for (const it of items) {
+    const z = it.z + 14 + Math.sin(now * .003 + it.x) * 2.5, r = projBox(C, it.x - 14, it.y - 14, z - 14, it.x + 14, it.y + 14, z + 14);
+    if (!r || offscreen(r) || occluded(r)) continue; list.push([it, z]);
+  }
+  const eye = [C.cx, C.cy, C.camZ];
+  for (const [it, z] of list) {
+    st.items++; const M = MODELS[it.type], yaw = now * .0014 + it.x * .01, c = Math.cos(yaw), s = Math.sin(yaw), sc = .85, L = lightAt(it.x, it.y, z);
+    const W3 = v => [it.x + (c * v[0] - s * v[1]) * sc, it.y + (s * v[0] + c * v[1]) * sc, z + (v[2] - M.cz) * sc];
+    for (const b of M.boxes) {
+      const col = packCol(b[6]);
+      for (const [ax, sg, q] of boxFaces(b)) {
+        const n = ax === 0 ? [c * sg, s * sg, 0] : ax === 1 ? [-s * sg, c * sg, 0] : [0, 0, sg], pts = q.map(W3), m = [0, 1, 2].map(i => (pts[0][i] + pts[1][i] + pts[2][i] + pts[3][i]) / 4);
+        if (n[0] * (eye[0] - m[0]) + n[1] * (eye[1] - m[1]) + n[2] * (eye[2] - m[2]) <= 0) continue;
+        drawPoly(C, pts.map(p => [p[0], p[1], p[2], 0, 0]), b[7] ? { mode: 1, col, b: 1, L: .6, pxl: false, at: false } : { mode: 1, col, b: .5 + .5 * Math.max(0, n[0] * LIGHT[0] + n[1] * LIGHT[1] + n[2] * LIGHT[2]), L, pxl: false, at: false });
+      }
+    }
+  }
+}
+const SPH = (() => { const out = [], LA = 8, LO = 14, v = (i, j) => { const th = i / LA * Math.PI, ph = j / LO * Math.PI * 2; return [Math.sin(th) * Math.cos(ph), Math.sin(th) * Math.sin(ph), Math.cos(th)]; };
+  for (let i = 0; i < LA; i++) for (let j = 0; j < LO; j++) out.push([v(i, j), v(i + 1, j), v(i + 1, j + 1), v(i, j + 1)]); return out; })();
+function drawBubble3D(C) { // spawn shield as a real translucent 3D sphere (brighter toward its rim); in first person you see its inside
+  const p = player; if (p.shield <= 0 || p.dead) return; if (p.shield < 60 && ((p.shield >> 3) & 1)) return;
+  const cx = p.x, cy = p.y, cz = p.z + 18, R = 30, eye = [C.cx, C.cy, C.camZ];
+  for (const q of SPH) {
+    const n = [0, 1, 2].map(i => (q[0][i] + q[1][i] + q[2][i] + q[3][i]) / 4), nl = Math.hypot(n[0], n[1], n[2]) || 1, c = [cx + n[0] * R, cy + n[1] * R, cz + n[2] * R];
+    const vx = eye[0] - c[0], vy = eye[1] - c[1], vz = eye[2] - c[2], vl = Math.hypot(vx, vy, vz) || 1, cs = Math.abs((n[0] * vx + n[1] * vy + n[2] * vz) / (nl * vl)), fr = Math.pow(1 - cs, 2);
+    drawPoly(C, q.map(v => [cx + v[0] * R, cy + v[1] * R, cz + v[2] * R, 0, 0]), { mode: 3, alpha: Math.min(.55, .11 + .5 * fr), sr: 140, sg: 210, sb: 255 });
+  }
+}
+function drawViewModel(C, now) { // first person: the held item as a 3D model in front of the camera (drawn last, always on top)
+  const p = player, type = heldType(); vmFlame = null; if (!type || p.dead || viewMode || !inGame || !MODELS[type]) return;
+  const M = MODELS[type], u = p.useT ? Math.sin(Math.PI * p.useT / 20) : 0, bob = Math.sin(p.phase) * p.amp, VS = .24, th = .5 + 1.25 * u;
+  const F = [C.dirX, C.dirY, 0], R = [C.rX, C.rY, 0], A = [F[0] * Math.sin(th), F[1] * Math.sin(th), Math.cos(th)], Y = [F[0] * Math.cos(th), F[1] * Math.cos(th), -Math.sin(th)];
+  const o = [C.cx + F[0] * (20 - u * 3) + R[0] * 7.5, C.cy + F[1] * (20 - u * 3) + R[1] * 7.5, C.camZ - 6.8 - bob * .5 - u * 2];
+  const W3 = v => [o[0] + (R[0] * v[0] + Y[0] * v[1] + A[0] * v[2]) * VS, o[1] + (R[1] * v[0] + Y[1] * v[1] + A[1] * v[2]) * VS, o[2] + (R[2] * v[0] + Y[2] * v[1] + A[2] * v[2]) * VS];
+  const eye = [C.cx, C.cy, C.camZ], faces = [];
+  for (const b of M.boxes) for (const [ax, sg, q] of boxFaces(b)) {
+    const base = [R, Y, A][ax], n = [base[0] * sg, base[1] * sg, base[2] * sg], pts = q.map(W3), m = [0, 1, 2].map(i => (pts[0][i] + pts[1][i] + pts[2][i] + pts[3][i]) / 4);
+    if (n[0] * (eye[0] - m[0]) + n[1] * (eye[1] - m[1]) + n[2] * (eye[2] - m[2]) <= 0) continue;
+    faces.push({ pts, d: (m[0] - eye[0]) ** 2 + (m[1] - eye[1]) ** 2 + (m[2] - eye[2]) ** 2, b: .55 + .45 * Math.max(0, n[0] * LIGHT[0] + n[1] * LIGHT[1] + n[2] * LIGHT[2]), col: packCol(b[6]), emi: !!b[7] });
+  }
+  faces.sort((a, b) => b.d - a.d); // far to near (no depth test for the view-model)
+  for (const f of faces) drawPoly(C, f.pts.map(q => [q[0], q[1], q[2], 0, 0]), { mode: 1, col: f.col, b: f.emi ? 1 : f.b, L: f.emi ? .6 : 0, pxl: false, at: false, nz: true });
+  const fl = M.boxes.find(b => b[7] === 1); if (fl) { const c = W3([(fl[0] + fl[1]) / 2, (fl[2] + fl[3]) / 2, (fl[4] + fl[5]) / 2]); vmFlame = proj3(C, c[0], c[1], c[2]); }
+}
+function drawTarget3D(C) { // click-to-walk marker: real 3D geometry, so walls, trees and characters hide it properly
+  const t = player.target; if (!t) return; const z = t.z + 1, M = { mode: 1, col: rgb(255, 214, 90), b: 1, L: .5, pxl: false, at: false };
+  const ring = (r0, r1) => { for (let i = 0; i < 16; i++) { const a0 = i / 16 * 6.2832, a1 = (i + 1) / 16 * 6.2832; drawPoly(C, [[t.x + Math.cos(a0) * r0, t.y + Math.sin(a0) * r0, z, 0, 0], [t.x + Math.cos(a0) * r1, t.y + Math.sin(a0) * r1, z, 0, 0], [t.x + Math.cos(a1) * r1, t.y + Math.sin(a1) * r1, z, 0, 0], [t.x + Math.cos(a1) * r0, t.y + Math.sin(a1) * r0, z, 0, 0]], M); } };
+  ring(7, 9.5); ring(2, 3.5); drawFlatBox(C, t.x - 1, t.y - 1, z, t.x + 1, t.y + 1, z + 12, rgb(255, 214, 90), .5);
+}
+function simJump(L) { // runs the real jump physics from the take-off point, to show exactly where the character will fly
+  const a = { x: L.lx, y: L.ly, z: L.A.z, vz: JUMP_FORCE, ground: false, angle: 0, flying: false }, sp = L.sprint ? SPRINTSP : WALKSP, pts = [], cc = S.charCol; S.charCol = false;
+  for (let t = 0; t < 90; t++) { const dx = L.tx - a.x, dy = L.ty - a.y, d = Math.hypot(dx, dy) || 1; a.angle = Math.atan2(dy, dx); moveActor(a, Math.min(sp, d) * dx / d, Math.min(sp, d) * dy / d); physZ(a, true); pts.push([a.x, a.y, a.z + 1]); if (a.ground && t > 3) break; }
+  S.charCol = cc; return pts;
+}
+function drawPathDebug(C) { // debug overlay for click-to-walk: the exact planned route
+  const p = player, R = p.route; if (!R) return; ctx.lineWidth = 1.5;
+  let cx = p.x, cy = p.y, cz = p.z + 1;
+  const line = (x, y, z, col) => { ctx.strokeStyle = col; ctx.beginPath(); line3(C, cx, cy, cz, x, y, z); ctx.stroke(); cx = x; cy = y; cz = z; };
+  const dot = (x, y, z, col) => { const q = proj3(C, x, y, z); if (q[2] > NEAR) { ctx.fillStyle = col; ctx.fillRect(q[0] - 2, q[1] - 2, 4, 4); } };
+  const rect = n => { ctx.strokeStyle = "rgba(80,200,255,.6)"; ctx.lineWidth = 1; ctx.beginPath(); const z = n.z + .5; line3(C, n.x0, n.y0, z, n.x1, n.y0, z); line3(C, n.x1, n.y0, z, n.x1, n.y1, z); line3(C, n.x1, n.y1, z, n.x0, n.y1, z); line3(C, n.x0, n.y1, z, n.x0, n.y0, z); ctx.stroke(); ctx.lineWidth = 1.5; };
+  for (let i = R.i; i < R.legs.length; i++) {
+    const L = R.legs[i];
+    if (L.type === "walk") { line(L.x, L.y, L.B.z + 1, "#35ff7a"); dot(L.x, L.y, L.B.z + 1, "#fff"); rect(L.B); }
+    else if (L.type === "final") { line(L.x, L.y, R.gz + 1, "#35ff7a"); dot(L.x, L.y, R.gz + 1, "#ffd65a"); }
+    else {
+      const jc = L.sprint ? "#ff9a1f" : "#ff4fd8"; rect(L.A); rect(L.B);
+      if (L.stage === 0) { line(L.lx, L.ly, L.A.z + 1, "#35ff7a"); dot(L.lx, L.ly, L.A.z + 1, "#fff"); L.sim = L.sim || simJump(L); for (const q of L.sim) line(q[0], q[1], q[2], jc); }
+      else line(L.tx, L.ty, L.B.z + 1, jc);
+      dot(L.tx, L.ty, L.B.z + 1, jc);
+    }
+  }
+}
+const solidA = { d: new Uint32Array(256).fill(0xFF000000), m: 15 };
+const AO_M = a => ({ mode: 2, td: aoTex.d, tm: 15, tw: 16, ts: 1, alpha: a }), CO_M = a => ({ mode: 2, td: aoCorner.d, tm: 15, tw: 16, ts: 1, alpha: a }), SO_M = a => ({ mode: 2, td: solidA.d, tm: 15, tw: 16, ts: 1, alpha: a });
+const stripPts = (side, x0, y0, x1, y1, z, m, out) => side === "N" ? (out ? [[x0, y0 - m, z, 0, 15], [x1, y0 - m, z, 15, 15], [x1, y0, z, 15, 0], [x0, y0, z, 0, 0]] : [[x0, y0, z, 0, 0], [x1, y0, z, 15, 0], [x1, y0 + m, z, 15, 15], [x0, y0 + m, z, 0, 15]])
+  : side === "S" ? (out ? [[x0, y1, z, 0, 0], [x1, y1, z, 15, 0], [x1, y1 + m, z, 15, 15], [x0, y1 + m, z, 0, 15]] : [[x0, y1 - m, z, 0, 15], [x1, y1 - m, z, 15, 15], [x1, y1, z, 15, 0], [x0, y1, z, 0, 0]])
+  : side === "W" ? (out ? [[x0 - m, y0, z, 0, 15], [x0, y0, z, 0, 0], [x0, y1, z, 15, 0], [x0 - m, y1, z, 15, 15]] : [[x0, y0, z, 0, 0], [x0 + m, y0, z, 0, 15], [x0 + m, y1, z, 15, 15], [x0, y1, z, 15, 0]])
+  : (out ? [[x1, y0, z, 0, 0], [x1 + m, y0, z, 0, 15], [x1 + m, y1, z, 15, 15], [x1, y1, z, 15, 0]] : [[x1 - m, y0, z, 0, 15], [x1, y0, z, 0, 0], [x1, y1, z, 15, 0], [x1 - m, y1, z, 15, 15]]);
+const cornerPts = (px, py, sx, sy, z, m) => [[px, py, z, 0, 0], [px + sx * m, py, z, 15, 0], [px + sx * m, py + sy * m, z, 15, 15], [px, py + sy * m, z, 0, 15]];
+function drawRing(C, x0, y0, x1, y1, z, m, aoM, coM) { // soft shadow all around a rectangle
+  for (const sd of ["N", "S", "W", "E"]) drawPoly(C, stripPts(sd, x0, y0, x1, y1, z, m, true), aoM);
+  for (const [px, py, sx, sy] of [[x0, y0, -1, -1], [x1, y0, 1, -1], [x0, y1, -1, 1], [x1, y1, 1, 1]]) drawPoly(C, cornerPts(px, py, sx, sy, z, m), coM);
+}
+const sdecals = []; // fixed shadows (the house)
+const addRing = (x0, y0, x1, y1, z, m, a) => { const pts = []; for (const sd of ["N", "S", "W", "E"]) pts.push([stripPts(sd, x0, y0, x1, y1, z, m, true), AO_M(a)]); for (const [px, py, sx, sy] of [[x0, y0, -1, -1], [x1, y0, 1, -1], [x0, y1, -1, 1], [x1, y1, 1, 1]]) pts.push([cornerPts(px, py, sx, sy, z, m), CO_M(a)]); for (const [q, M] of pts) sdecals.push({ cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, pts: q, M }); };
+const addSoftRect = (x0, y0, x1, y1, z, m, a) => { sdecals.push({ cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, pts: [[x0, y0, z, 0, 0], [x1, y0, z, 15, 0], [x1, y1, z, 15, 15], [x0, y1, z, 0, 15]], M: SO_M(a) }); addRing(x0, y0, x1, y1, z, m, a); };
+const addInStrip = (side, x0, y0, x1, y1, z, m, a) => sdecals.push({ cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, pts: stripPts(side, x0, y0, x1, y1, z, m, false), M: AO_M(a) });
+addRing(300, -110, 540, 110, .3, 20, .72);           // contact shadow around the house walls
+addSoftRect(258, -158, 498, 66, .25, 30, .3);       // the shadow the house casts on the grass (light comes from +x,+y)
+addInStrip("N", 312, -98, 528, 98, 4.3, 12, .5); addInStrip("S", 312, -98, 528, 98, 4.3, 12, .5); addInStrip("E", 312, -98, 528, 98, 4.3, 12, .5); // inside, along the walls
+addInStrip("W", 312, -98, 528, -22, 4.3, 12, .5); addInStrip("W", 312, 22, 528, 98, 4.3, 12, .5);                                                   // (not across the doorway)
+function drawDecals(C) { // soft shadows: contact shadows at wall bases, the house shadow, canopy shadows under trees, blobs under characters / items
+  const cx = C.cx, cy = C.cy, aoM = AO_M(.72), coM = CO_M(.72), blM = { mode: 2, td: blobTex.d, tm: 31, tw: 32, ts: 1, alpha: .5 };
+  for (const b of ground) { if ((b.cx - cx) ** 2 + (b.cy - cy) ** 2 > 1100 * 1100) continue; drawRing(C, b.x0, b.y0, b.x1, b.y1, b.aoZ, 14, aoM, coM); }
+  for (const d of sdecals) if ((d.cx - cx) ** 2 + (d.cy - cy) ** 2 < 1300 * 1300) drawPoly(C, d.pts, d.M);
+  for (const t of blobs) if ((t.x - cx) ** 2 + (t.y - cy) ** 2 < 1100 * 1100)
+    drawPoly(C, [[t.x - t.r, t.y - t.r, .35, 0, 0], [t.x + t.r, t.y - t.r, .35, 31, 0], [t.x + t.r, t.y + t.r, .35, 31, 31], [t.x - t.r, t.y + t.r, .35, 0, 31]], { mode: 2, td: blobTex.d, tm: 31, tw: 32, ts: 1, alpha: t.a });
+  const blob = (x, y, zRef, r) => { const z = floorBelow(x, y, zRef + STEP) + .35; if (z < -100) return; drawPoly(C, [[x - r, y - r, z, 0, 0], [x + r, y - r, z, 31, 0], [x + r, y + r, z, 31, 31], [x - r, y + r, z, 0, 31]], blM); };
+  blob(player.x, player.y, player.z, 17);
+  if (botOn() && bot.lod < 2) blob(bot.x, bot.y, bot.z, 17);
+  if (remoteShown()) blob(remote.x, remote.y, remote.z, 17);
+  for (const it of items) if ((it.x - cx) ** 2 + (it.y - cy) ** 2 < 700 * 700) blob(it.x, it.y, it.z, 8);
+}
+
+// ---------- Overlay drawing (2D lines, glows, markers) ----------
+function proj3(C, x, y, z) { const rx = x - C.cx, ry = y - C.cy, d = rx * C.dirX + ry * C.dirY; return [W / 2 + (rx * C.rX + ry * C.rY) * C.proj / d, C.horizon - (z - C.camZ) * C.proj / d, d]; }
+function line3(C, x0, y0, z0, x1, y1, z1) { // adds a clipped 3D segment to the current canvas path
+  const dep = (x, y) => (x - C.cx) * C.dirX + (y - C.cy) * C.dirY;
+  let d0 = dep(x0, y0), d1 = dep(x1, y1);
+  if (d0 < NEAR && d1 < NEAR) return;
+  if (d0 < NEAR) { const t = (NEAR - d0) / (d1 - d0); x0 += (x1 - x0) * t; y0 += (y1 - y0) * t; z0 += (z1 - z0) * t; }
+  else if (d1 < NEAR) { const t = (NEAR - d1) / (d0 - d1); x1 += (x0 - x1) * t; y1 += (y0 - y1) * t; z1 += (z0 - z1) * t; }
+  const a = proj3(C, x0, y0, z0), b = proj3(C, x1, y1, z1);
+  if ((a[0] < 0 && b[0] < 0) || (a[0] > W && b[0] > W) || (a[1] < 0 && b[1] < 0) || (a[1] > H && b[1] > H)) return;
+  ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]);
+}
+function box3(C, x0, y0, z0, x1, y1, z1) {
+  const e = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
+  for (let i = 0; i < 4; i++) { const a = e[i], b = e[(i + 1) % 4]; line3(C, a[0], a[1], z0, b[0], b[1], z0); line3(C, a[0], a[1], z1, b[0], b[1], z1); line3(C, a[0], a[1], z0, a[0], a[1], z1); }
+}
+function bodyBox3(C, a, pt) { // one oriented part of the real body
+  const c = Math.cos(a.angle), s = Math.sin(a.angle), q = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([sx, sy]) => [a.x - s * pt.hw * sx + c * pt.hd * sy, a.y + c * pt.hw * sx + s * pt.hd * sy]), z0 = a.z + pt.z0, z1 = a.z + pt.z1;
+  for (let i = 0; i < 4; i++) { const u = q[i], v = q[(i + 1) % 4]; line3(C, u[0], u[1], z0, v[0], v[1], z0); line3(C, u[0], u[1], z1, v[0], v[1], z1); line3(C, u[0], u[1], z0, u[0], u[1], z1); }
+}
+function drawWire(C) { // wireframe view of the whole world: every box outlined (kill boxes red, spawns cyan)
+  ctx.lineWidth = 1;
+  for (const [col, test] of [["#35ff7a", b => !b.kill && b.tag !== "spawn" && b.tag !== "finish"], ["#4cf", b => b.tag === "spawn"], ["#ffd65a", b => b.tag === "finish"], ["#ff3b30", b => b.kill]]) {
+    ctx.strokeStyle = col; ctx.beginPath();
+    for (const b of boxes) { if (!test(b) || b.z0 < -1) continue; const r = projBox(C, b.x0, b.y0, b.z0, b.x1, b.y1, b.z1); if (!r || offscreen(r)) continue; box3(C, b.x0, b.y0, b.z0, b.x1, b.y1, b.z1); }
+    ctx.stroke();
+  }
+  ctx.strokeStyle = "#2a3b55"; ctx.beginPath(); // ground grid around the player
+  const gx = Math.round(C.cx / 128) * 128, gy = Math.round(C.cy / 128) * 128;
+  for (let i = -10; i <= 10; i++) { line3(C, gx + i * 128, gy - 1280, 0, gx + i * 128, gy + 1280, 0); line3(C, gx - 1280, gy + i * 128, 0, gx + 1280, gy + i * 128, 0); }
+  ctx.stroke();
+}
+function drawBubble(C) { // spawn shield: translucent bubble around the player (screen glow in first person)
+  const p = player; if (p.shield <= 0 || p.dead) return;
+  if (p.shield < 60 && ((p.shield >> 3) & 1)) return; // blink during the last second
+  if (viewMode) {
+    const q = proj3(C, p.x, p.y, p.z + 18); if (q[2] < 8) return; const r = 30 * C.proj / q[2];
+    const gr = ctx.createRadialGradient(q[0], q[1], r * .55, q[0], q[1], r); gr.addColorStop(0, "rgba(120,200,255,.04)"); gr.addColorStop(1, "rgba(120,200,255,.38)");
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(q[0], q[1], r, 0, 7); ctx.fill();
+    ctx.strokeStyle = "rgba(200,240,255,.85)"; ctx.lineWidth = 1; ctx.stroke();
+    ctx.strokeStyle = "rgba(255,255,255,.7)"; ctx.beginPath(); ctx.arc(q[0], q[1], r * .78, 3.6, 4.5); ctx.stroke();
+  } else {
+    const gr = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .3, W / 2, H / 2, Math.max(W, H) * .65);
+    gr.addColorStop(0, "rgba(100,190,255,0)"); gr.addColorStop(1, "rgba(100,190,255,.4)"); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
+  }
+}
+function drawTarget(C) { // click-to-walk destination marker
+  const t = player.target; if (!t) return; const q = proj3(C, t.x, t.y, t.z + .5); if (q[2] < 4) return; const r = 9 * C.proj / q[2];
+  ctx.strokeStyle = "#ffd65a"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(q[0], q[1], r, r * .35, 0, 0, 7); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(q[0], q[1], r * .4, r * .14, 0, 0, 7); ctx.stroke();
+}
+function pickFloor(mx, my) { // screen position -> top surface of a box (null if there isn't a walkable spot)
+  const C = lastC; if (!C) return null;
+  const sN = (mx - W / 2) / C.proj, hN = (C.horizon - my) / C.proj, dx = C.dirX + C.rX * sN, dy = C.dirY + C.rY * sN, L = Math.hypot(dx, dy, hN);
+  const h = raycast(C.cx, C.cy, C.camZ, dx / L, dy / L, hN / L, 3000);
+  if (!h || h.ax !== 2 || h.sg !== 1 || h.b.kill) return null;
+  return { x: C.cx + dx / L * h.t, y: C.cy + dy / L * h.t, z: h.b.z1 };
+}
+
+// ---------- Click-to-walk navigation: a graph of walkable top surfaces, connected by walking, stepping and jumping ----------
+let NAV = null;
+const WALKSP = 2, SPRINTSP = 3.8;
+function subRect(r, k) { // r minus k (up to 4 rectangles)
+  if (k.x0 >= r.x1 || k.x1 <= r.x0 || k.y0 >= r.y1 || k.y1 <= r.y0) return [r];
+  const out = [];
+  if (k.y0 > r.y0) out.push({ x0: r.x0, y0: r.y0, x1: r.x1, y1: k.y0 });
+  if (k.y1 < r.y1) out.push({ x0: r.x0, y0: k.y1, x1: r.x1, y1: r.y1 });
+  const ya = Math.max(r.y0, k.y0), yb = Math.min(r.y1, k.y1);
+  if (k.x0 > r.x0) out.push({ x0: r.x0, y0: ya, x1: k.x0, y1: yb });
+  if (k.x1 < r.x1) out.push({ x0: k.x1, y0: ya, x1: r.x1, y1: yb });
+  return out;
+}
+function buildNav() {
+  NAV = []; const ks = boxes.filter(b => b.kill).map(b => ({ x0: b.x0 - 17, y0: b.y0 - 17, x1: b.x1 + 17, y1: b.y1 + 17, z: b.z1 })); // keep a safety margin from lava
+  for (const b of SOLID) {
+    if (b.kill || b.x1 - b.x0 < 10 || b.y1 - b.y0 < 10 || b.z1 > 120) continue;
+    let rs = [{ x0: b.x0, y0: b.y0, x1: b.x1, y1: b.y1 }], cut = false;
+    for (const k of ks) if (b.z1 < k.z + 1.5) { const nr = rs.flatMap(r => subRect(r, k)); if (nr.length !== rs.length || nr.some((r, i) => r !== rs[i])) cut = true; rs = nr; }
+    for (const r of rs) if (r.x1 - r.x0 >= 10 && r.y1 - r.y0 >= 10) NAV.push({ x0: r.x0, y0: r.y0, x1: r.x1, y1: r.y1, z: b.z1, box: b, safe: cut });
+  }
+}
+const airTime = (rise, v) => { const d = v * v - .8 * rise; return d < 0 ? 0 : (v + Math.sqrt(d)) / .4; }; // ticks in the air before reaching a surface `rise` above the start
+const clampR = (n, x, y, m) => [Math.max(n.x0 + m, Math.min(n.x1 - m, x)), Math.max(n.y0 + m, Math.min(n.y1 - m, y))];
+function edgeInfo(A, B) { // can you get from surface A to surface B? by walking, or by a (sprint) jump
+  const gx = Math.max(B.x0 - A.x1, A.x0 - B.x1, 0), gy = Math.max(B.y0 - A.y1, A.y0 - B.y1, 0), gap = Math.hypot(gx, gy), rise = B.z - A.z;
+  if (gap <= 1 && rise <= STEP) return { type: "walk", cost: Math.hypot((A.x0 + A.x1 - B.x0 - B.x1) / 2, (A.y0 + A.y1 - B.y0 - B.y1) / 2) };
+  if (rise > 24) return null;
+  const t = airTime(rise, JUMP_FORCE), need = Math.max(0, gap - (A.safe ? 0 : 5) - 11), reachW = WALKSP * t * .85, reachS = SPRINTSP * t * .85;
+  if (need > reachS) return null;
+  const mA = clampR(A, (B.x0 + B.x1) / 2, (B.y0 + B.y1) / 2, 0), mB = clampR(B, mA[0], mA[1], 0), zc = Math.max(A.z, B.z);
+  for (let i = 1; i < 5; i++) if (blockedAt({ z: zc }, mA[0] + (mB[0] - mA[0]) * i / 5, mA[1] + (mB[1] - mA[1]) * i / 5, 4)) return null; // a wall is in the way
+  return { type: "jump", sprint: need > reachW, cost: gap + 14 + (need > reachW ? 20 : 0) + (rise > 8 ? 6 : 0) };
+}
+function mkLeg(A, B, e) {
+  const bcx = (B.x0 + B.x1) / 2, bcy = (B.y0 + B.y1) / 2, acx = (A.x0 + A.x1) / 2, acy = (A.y0 + A.y1) / 2;
+  const mB = Math.max(0, Math.min(8, (B.x1 - B.x0) / 2 - 1, (B.y1 - B.y0) / 2 - 1));
+  if (e.type === "walk") { const q = clampR(B, acx, acy, mB); return { type: "walk", A, B, x: q[0], y: q[1] }; }
+  const mA = Math.max(0, Math.min(4, (A.x1 - A.x0) / 2 - 1, (A.y1 - A.y0) / 2 - 1));
+  const pA = clampR(A, bcx, bcy, mA), pB = clampR(B, pA[0], pA[1], 0), dd = Math.hypot(pB[0] - pA[0], pB[1] - pA[1]), push = A.safe ? 0 : 5;
+  const lx = dd > .5 ? pA[0] + (pB[0] - pA[0]) / dd * push : pA[0], ly = dd > .5 ? pA[1] + (pB[1] - pA[1]) / dd * push : pA[1], T = clampR(B, lx, ly, mB);
+  return { type: "jump", A, B, lx, ly, tx: T[0], ty: T[1], sprint: e.sprint, stage: 0, jt: 0 };
+}
+function planRoute(sx, sy, sz, gx, gy, gz) { // A* over the surface graph
+  if (!NAV) buildNav();
+  const find = (x, y, z, ms) => { for (const m of ms) { let best = null, bd = 1e9; for (const n of NAV) { if (Math.abs(n.z - z) > 2.5 || x < n.x0 - m || x > n.x1 + m || y < n.y0 - m || y > n.y1 + m) continue; const d = Math.hypot((n.x0 + n.x1) / 2 - x, (n.y0 + n.y1) / 2 - y); if (d < bd) { bd = d; best = n; } } if (best) return best; } return null; };
+  const s = find(sx, sy, sz, [0, 12]), g = find(gx, gy, gz, [0, 14]); if (!s || !g) return null;
+  const R = { legs: [], i: 0, t: 0, replans: 0, gx, gy, gz, lx: sx, ly: sy, stuck: 0, detours: 0, detour: 0, dsg: 1 };
+  if (s === g) { R.legs.push({ type: "final", x: gx, y: gy }); return R; }
+  const open = [s], gs = new Map([[s, 0]]), came = new Map(), closed = new Set(), h = n => Math.hypot((n.x0 + n.x1) / 2 - gx, (n.y0 + n.y1) / 2 - gy); let found = false;
+  while (open.length) {
+    let bi = 0; for (let i = 1; i < open.length; i++) if (gs.get(open[i]) + h(open[i]) < gs.get(open[bi]) + h(open[bi])) bi = i;
+    const A = open.splice(bi, 1)[0]; if (A === g) { found = true; break; } closed.add(A);
+    for (const B of NAV) {
+      if (closed.has(B)) continue; const e = edgeInfo(A, B); if (!e) continue; const ng = gs.get(A) + e.cost;
+      if (!gs.has(B) || ng < gs.get(B)) { gs.set(B, ng); came.set(B, [A, e]); if (!open.includes(B)) open.push(B); }
+    }
+  }
+  if (!found) return null;
+  const chain = []; for (let n = g; n !== s; n = came.get(n)[0]) chain.unshift([came.get(n)[0], n, came.get(n)[1]]);
+  for (const [A, B, e] of chain) R.legs.push(mkLeg(A, B, e));
+  R.legs.push({ type: "final", x: gx, y: gy }); return R;
+}
+function cancelRoute(msg) { player.route = null; player.target = null; if (msg) addMsg("", msg, true); }
+function startRoute(t) {
+  const p = player, z0 = p.ground ? p.z : floorBelow(p.x, p.y, p.z + STEP), R = planRoute(p.x, p.y, z0, t.x, t.y, t.z);
+  if (!R) { addMsg("", "I can't find a way there.", true); return; }
+  p.route = R; p.target = t;
+}
+function routeStep(p) { // what should the player do this tick? {dx,dy,jump,sprint} or null when finished
+  const R = p.route; if (++R.t > 3000) return null;
+  for (let g = 0; g < 4; g++) {
+    const L = R.legs[R.i]; if (!L) return null;
+    if (L.type === "final") { const d = Math.hypot(L.x - p.x, L.y - p.y); return d < 4 ? null : { dx: L.x - p.x, dy: L.y - p.y }; }
+    if (L.type === "walk") { const B = L.B; if (p.ground && p.floorBox === B.box && p.x >= B.x0 - 4 && p.x <= B.x1 + 4 && p.y >= B.y0 - 4 && p.y <= B.y1 + 4) { R.i++; continue; } return { dx: L.x - p.x, dy: L.y - p.y }; }
+    if (L.stage === 0) { // walk to the take-off point, then jump
+      const d = Math.hypot(L.lx - p.x, L.ly - p.y), thr = L.sprint ? 4.2 : 2.6;
+      if (p.ground && d < thr) { L.stage = 1; L.jt = 0; return { dx: L.tx - p.x, dy: L.ty - p.y, jump: true, sprint: L.sprint }; }
+      return { dx: L.lx - p.x, dy: L.ly - p.y, sprint: L.sprint && d < 45 };
+    }
+    if (++L.jt > 3 && p.ground) { // landed
+      if (p.floorBox === L.B.box) { R.i++; continue; }
+      const R2 = R.replans < 3 ? planRoute(p.x, p.y, p.z, R.gx, R.gy, R.gz) : null; if (!R2) return null; R2.replans = R.replans + 1; p.route = R2; return routeStep(p);
+    }
+    return { dx: L.tx - p.x, dy: L.ty - p.y, sprint: L.sprint };
+  }
+  return null;
+}
+const lavaAt = (x, y, z) => { for (const b of SOLID) if (b.kill && overlapXY(b, x, y, RADIUS + 1) && z < b.z1 + 1 && z + BODY_H > b.z0 - 1) return true; return false; };
+
+// ---------- Enemy bot AI (the host runs it; a guest just displays it) ----------
+function botRespawn() { Object.assign(bot, { debris: null, x: 260, y: -200, z: 0, vz: 0, ground: true, tx: 260, ty: -200, hp: 50, dead: false, deadT: 0, fall: 0, atk: 0, cool: 60, wp: null, amp: 0, stuck: 0, sidestep: 0 }); }
+function botKill(by) {
+  bot.dead = true; bot.deadT = 0; bot.fall = 0; stats.b.d++; if (S.death === "break") breakApart(bot);
+  if (by === "lava") addMsg("", "The bot fell into the lava!", true);
+  else if (by === "g") net.send({ t: "bk" }); else { stats.p.k++; addMsg("", "You defeated the bot!", true); }
+}
+function botHit(dmg, by) { // melee hit on the bot (host side)
+  if (!botOn() || bot.dead) return; bot.hp -= dmg; if (bot.hp <= 0) botKill(by);
+}
+function updateBot() {
+  const b = bot;
+  if (net.connected && !net.host) { // guest: follow the host's bot
+    b.x += (b.tx - b.x) * .4; b.y += (b.ty - b.y) * .4; return;
+  }
+  if (!S.bot) return;
+  if (b.dead) { b.fall = Math.min(1.45, b.fall + .04); b.amp = 0; if (++b.deadT > 240) botRespawn(); return; }
+  let target = null, td = 1e9;
+  for (const p of [player, remoteShown() ? remote : null]) { if (!p || p.dead) continue; const d = Math.hypot(p.x - b.x, p.y - b.y); if (d < td && d < 320 && Math.abs(p.z - b.z) < 70 && losClear(b, p)) { target = p; td = d; } }
+  let tx, ty, spd;
+  if (target) { tx = target.x; ty = target.y; spd = 1.5; }
+  else {
+    if (!b.wp || Math.hypot(b.wp[0] - b.x, b.wp[1] - b.y) < 14 || --b.wpT <= 0) { b.wp = [-300 + Math.random() * 1200, -300 + Math.random() * 600]; b.wpT = 400; }
+    [tx, ty] = b.wp; spd = 1;
+  }
+  depenetrate(b);
+  if (b.sidestep > 0) b.sidestep--; // briefly walking around an obstacle: keep the current heading
+  else { const want = Math.atan2(ty - b.y, tx - b.x); let da = want - b.angle; da = Math.atan2(Math.sin(da), Math.cos(da)); b.angle += da * .15; }
+  let moving = false;
+  const near = target && (td < 18 || bodiesOverlap(b, b.x, b.y, target, 3)); // bodies are (almost) touching: stop walking, start hitting
+  if (!near) {
+    moving = moveActor(b, Math.cos(b.angle) * spd, Math.sin(b.angle) * spd);
+    if (!moving) { b.wp = null; if (target && ++b.stuck > 20) { b.angle += (Math.random() < .5 ? -1 : 1) * 1.2; b.sidestep = 20; b.stuck = 0; } } else b.stuck = 0;
+  }
+  physZ(b, true); if (b.z < VOID_Z) botRespawn();
+  if (touchesKill(b)) { botKill("lava"); return; } // lava kills the bot too
+  if (b.cool > 0) b.cool--;
+  const reach = target && Math.abs(target.z - b.z) < 30 && (td < 22 || bodiesOverlap(b, b.x, b.y, target, 10)); // within arm's reach of the real body
+  if (reach && b.cool <= 0) { b.atk = 1; b.cool = 60; if (target === player) hurt(10, "bot"); else if (remote.shield <= 0) net.send({ t: "hit", n: 10 }); }
+  if (b.atk && ++b.atk > 20) b.atk = 0;
+  if (b.lod === 0) { if (moving) b.phase += .2; b.amp += ((moving ? .7 : 0) - b.amp) * .2; } // animates only while on screen at full detail
+}
+function updateRemote() {
+  const r = remote; if (!remoteShown()) return;
+  r.x += (r.tx - r.x) * .4; r.y += (r.ty - r.y) * .4; r.z += (r.tz - r.z) * .4;
+  let da = r.ta - r.angle; da = Math.atan2(Math.sin(da), Math.cos(da)); r.angle += da * .4;
+  if (r.emote) r.emote.t++; if (r.useT && ++r.useT > 20) r.useT = 0;
+}
+
+// ---------- Chat ----------
+let typing = false;
+const chatLog = $("chatLog"), chatInput = $("chatInput"), chatBox = $("chat");
+function addMsg(name, text, sys, cls) {
+  const d = document.createElement("div"); d.className = "msg" + (sys ? " sys" : "") + (cls ? " " + cls : "");
+  if (name) { const s = document.createElement("span"); s.className = "nm"; s.textContent = name + ": "; d.appendChild(s); }
+  d.appendChild(document.createTextNode(text)); chatLog.appendChild(d);
+  while (chatLog.children.length > 60) chatLog.removeChild(chatLog.firstChild);
+  setTimeout(() => d.classList.add("fade"), 9000);
+}
+const say = text => { addMsg(myName(), text); net.send({ t: "c", m: text, n: myName() }); };
+function openChat() {
+  typing = true; for (const k in keys) keys[k] = false;
+  unlock(); chatBox.classList.add("open"); chatInput.focus();
+}
+function closeChat() { typing = false; chatInput.value = ""; chatInput.classList.remove("cmd"); chatInput.blur(); chatBox.classList.remove("open"); syncLock(); }
+function sendChat() {
+  const t = chatInput.value.trim(); closeChat(); if (!t) return;
+  if (t[0] !== "/") return say(t);
+  addMsg(myName(), t, false, "cmd"); // commands show up in their own colour
+  const [c, a] = t.slice(1).split(/\s+/), amt = Math.max(0, Math.min(100, parseInt(a) || 10)), p = player;
+  if (c === "help") return addMsg("", "Commands: /fly  /noclip  /n greet  /hurt [n]  /heal [n]  /kill  /help", true);
+  if (p.dead) return;
+  if (c === "fly") {
+    p.flying = !p.flying; p.vz = 0;
+    addMsg("", p.flying ? "Fly enabled. Space = up, F or Ctrl = down." : "Fly disabled.", true);
+  } else if (c === "noclip") {
+    p.noclip = !p.noclip;
+    if (!p.noclip && blockedAt(p, p.x, p.y)) { const s = spawnFor(); p.x = s.x; p.y = s.y; p.z = s.z; addMsg("", "You were stuck in a wall - moved to the spawn location.", true); }
+    addMsg("", p.noclip ? "Noclip enabled: you can walk through walls." : "Noclip disabled.", true);
+  } else if (c === "n") {
+    if (a === "greet") p.emote = { name: "greet", t: 0 }; else addMsg("", "Animations: /n greet", true);
+  } else if (c === "hurt") hurt(amt);
+  else if (c === "heal") p.hp = Math.min(100, p.hp + amt);
+  else if (c === "kill") { if (S.dying) p.hp = 0; else addMsg("", "Dying is disabled in settings.", true); }
+  else addMsg("", "Unknown command: /" + c, true);
+}
+chatInput.oninput = () => chatInput.classList.toggle("cmd", chatInput.value[0] === "/"); // turns green while you type a command
+addMsg("", "Welcome to redWalls! Press Enter or / to chat, \\ for quick chat, /help for commands.", true);
+
+// ---------- Safe chat: rectangular cascading preset messages (like the old Roblox Super Safe Chat) ----------
+const QC = [
+  { l: "Hello", c: [{ l: "Hi!" }, { l: "Hello everyone!" }, { l: "Howdy!" }, { l: "Greetings!" }] },
+  { l: "Goodbye", c: [{ l: "Bye!" }, { l: "See you later!" }, { l: "I have to go now." }, { l: "Thanks for playing!" }] },
+  { l: "Questions", c: [{ l: "Can you help me?" }, { l: "Where is everyone?" }, { l: "Want to team up?" }, { l: "What's your name?" }, { l: "How do I get a tool?" }] },
+  { l: "Answers", c: [{ l: "Yes" }, { l: "No" }, { l: "OK" }, { l: "Maybe" }, { l: "Thanks!" }, { l: "You're welcome!" }, { l: "Sorry!" }] },
+  { l: "Game", c: [
+    { l: "Tips", c: [{ l: "Watch out for the lava!" }, { l: "Press ~ to open your backpack." }, { l: "Look for items around the map." }] },
+    { l: "Course", c: [{ l: "Race you to the finish!" }, { l: "Nice jump!" }, { l: "I fell in the lava..." }] },
+    { l: "Combat", c: [{ l: "Behind you!" }, { l: "I need healing!" }, { l: "Nice hit!" }, { l: "Run away!" }] },
+    { l: "Teams", c: [{ l: "Join the red team!" }, { l: "Join the blue team!" }, { l: "Join the green team!" }, { l: "Join the yellow team!" }, { l: "Which team are you on?" }] }
+  ] },
+  { l: "Fun", c: [{ l: "That was awesome!" }, { l: "Good game!" }, { l: "Nice one!" }, { l: "Oops!" }, { l: "LOL" }] }
+];
+let qcPath = [];
+const qcListAt = d => { let l = QC; for (let k = 0; k < d; k++) l = l[qcPath[k]].c; return l; };
+function renderQC() { // one column per level; picking an entry opens the next column to its right
+  const el = $("scMenu"); el.textContent = "";
+  for (let d = 0; d <= qcPath.length; d++) {
+    const col = document.createElement("div"); col.className = "scCol";
+    qcListAt(d).forEach((nd, i) => { const b = document.createElement("button"); b.textContent = (d === qcPath.length ? (i + 1) + ". " : "") + nd.l + (nd.c ? "  \u203A" : ""); if (qcPath[d] === i) b.className = "sel"; b.onclick = () => qcPickAt(d, i); col.appendChild(b); });
+    el.appendChild(col);
+  }
+}
+function qcPickAt(d, i) {
+  qcPath = qcPath.slice(0, d); const nd = qcListAt(d)[i]; if (!nd) return;
+  if (nd.c) { qcPath.push(i); renderQC(); } else { say(nd.l); closeQC(); }
+}
+const qcPick = i => qcPickAt(qcPath.length, i);
+function qcBack() { if (qcPath.length) { qcPath.pop(); renderQC(); } else closeQC(); }
+function openQC() { if (!S.chat || qcOpen) return; qcOpen = true; qcPath = []; renderQC(); $("scMenu").classList.remove("hide"); unlock(); }
+function closeQC() { qcOpen = false; $("scMenu").classList.add("hide"); syncLock(); }
+$("scBtn").onclick = () => qcOpen ? closeQC() : openQC();
+
+function togglePack() {
+  packOpen = !packOpen; $("pack").classList.toggle("hide", !packOpen);
+  if (packOpen) unlock(); else syncLock();
+}
+function useTool() {
+  const p = player, h = held(); if (!h || p.dead || p.useT || packOpen) return;
+  p.useT = 1; const type = inv.hot[inv.sel].type;
+  if (type === "potion") { p.hp = Math.min(100, p.hp + 25); inv.hot[inv.sel] = null; inv.sel = -1; refreshInv(); addMsg("", "You drank a potion (+25 HP).", true); return; }
+  if (botOn() && !bot.dead) { // melee hit on the bot
+    const dx = bot.x - p.x, dy = bot.y - p.y, d = Math.hypot(dx, dy);
+    if (d < 48 && Math.abs(bot.z - p.z) < 30 && (dx * Math.cos(p.angle) + dy * Math.sin(p.angle)) / (d || 1) > .2) {
+      if (net.connected && !net.host) net.send({ t: "bh", d: h.dmg });
+      else { const kx = bot.x + dx / d * 10, ky = bot.y + dy / d * 10; if (stand(bot, kx, ky)) { bot.x = kx; bot.y = ky; } botHit(h.dmg, "h"); }
+    }
+  }
+}
+
+// ---------- Multiplayer (2 players): peer-to-peer over WebRTC or BroadcastChannel ----------
+const net = { id: Math.random().toString(36).slice(2, 9), connected: false, host: false, peer: null, mode: "", botOn: true, raw: null, send(m) { if (!this.connected || !this.raw) return; m.id = this.id; try { this.raw(m); } catch (e) {} } };
+let pcRTC = null, dcRTC = null, bcRTC = null, ping = 0, lastNetSend = 0;
+function mpStatus(t) { const el = $("mpStatus"); if (el) el.textContent = t; }
+function netUp(host) {
+  net.connected = true; net.host = host; remote.seen = false; $("mpDisc").classList.remove("hide");
+  mpStatus("Connected! You are " + (host ? "Player 1 (host)" : "Player 2") + ". Press Play.");
+  addMsg("", "Connected to the other player. " + (host ? "You host the bot." : "The host controls the bot."), true);
+}
+function netDown(why) {
+  const was = net.connected; net.connected = false; net.peer = null; net.raw = null; remote.seen = false; $("mpDisc").classList.add("hide");
+  try { if (dcRTC) dcRTC.close(); if (pcRTC) pcRTC.close(); if (bcRTC) bcRTC.close(); } catch (e) {} dcRTC = pcRTC = bcRTC = null;
+  mpStatus(why || "Not connected"); if (was) addMsg("", why || "Disconnected.", true);
+}
+function sendItems() { net.send({ t: "items", l: items.map(i => ({ id: i.id, type: i.type, x: i.x, y: i.y, z: i.z })) }); }
+function onNet(m) {
+  const r = remote;
+  switch (m.t) {
+    case "hello": if (!net.peer) { net.peer = m.id; net.raw = bcRaw; net.connected = true; net.send({ t: "hello" }); netUp(net.id < m.id); } break;
+    case "s": // the other player's state
+      if (!r.seen) { r.seen = true; r.x = m.x; r.y = m.y; r.z = m.z; r.angle = m.a; if (net.host) { sendItems(); } addMsg("", "Player " + (net.host ? 2 : 1) + " joined the game.", true); }
+      r.last = performance.now(); r.tx = m.x; r.ty = m.y; r.tz = m.z; r.ta = m.a; r.phase = m.ph; r.amp = m.am; r.ground = !!m.gr; r.flying = !!m.fl; r.climbing = !!m.cl; { const nd = !!m.dd; if (nd && !r.dead && S.death === "break") breakApart(r); if (!nd) r.debris = null; r.dead = nd; } r.fall = m.fa; r.emote = m.em >= 0 ? { t: m.em } : null;
+      if ((m.tm || "") !== r.team) { r.team = m.tm || ""; r.parts = mkParts({ skin: "#f5cd30", shirt: r.team && TEAMS[r.team] ? TEAMS[r.team].shirt : "#c0392b", pants: "#2c2c54" }); }
+      r.useT = m.us; r.heldType = m.hd; r.shield = m.sh; r.hp = m.hp; r.k = m.k; r.d = m.d; r.name = net.host ? "Player 2" : "Player 1"; break;
+    case "b": // the host's bot
+      if (net.host) break; net.botOn = !m.off; { const was = bot.dead; Object.assign(bot, { tx: m.x, ty: m.y, z: m.z, angle: m.a, phase: m.ph, amp: m.am, dead: !!m.dd, fall: m.fa, hp: m.hp, atk: m.at, ground: true }); if (bot.dead && !was && S.death === "break") breakApart(bot); if (!bot.dead) bot.debris = null; }
+      stats.b.k = m.k; stats.b.d = m.d; break;
+    case "c": addMsg(m.n || "Player", m.m); break;
+    case "pk": items = items.filter(i => i.id !== m.i); break;
+    case "dr": items.push({ id: m.it.id, type: m.it.type, x: m.it.x, y: m.it.y, z: m.it.z, noPick: performance.now() + 1500 }); break;
+    case "items": if (!net.host) items = m.l.map(i => ({ id: i.id, type: i.type, x: i.x, y: i.y, z: i.z, noPick: 0 })); break;
+    case "bh": if (net.host) botHit(m.d, "g"); break;
+    case "bk": stats.p.k++; addMsg("", "You defeated the bot!", true); break;
+    case "hit": hurt(m.n, "bot"); break;
+    case "died": if (net.host && m.s === "bot") stats.b.k++; break;
+    case "bye": netDown("The other player left."); break;
+    case "ping": net.send({ t: "pong", ts: m.ts }); break;
+    case "pong": ping = Math.max(0, performance.now() - m.ts); break;
+  }
+}
+const bcRaw = m => bcRTC.postMessage(m);
+function startLocal() { // two tabs of the same browser
+  netDown(); if (typeof BroadcastChannel === "undefined") return mpStatus("BroadcastChannel is not supported here.");
+  bcRTC = new BroadcastChannel("redwalls-v13"); net.mode = "bc";
+  bcRTC.onmessage = e => { const m = e.data; if (!m || m.id === net.id) return; if (net.peer && m.id !== net.peer) return; onNet(m); };
+  mpStatus("Waiting for a second tab... open this page again and press the same button.");
+  net.raw = bcRaw; net.connected = false; bcRTC.postMessage({ t: "hello", id: net.id });
+  net.sendHelloTimer = setInterval(() => { if (net.connected || !bcRTC) return clearInterval(net.sendHelloTimer); bcRTC.postMessage({ t: "hello", id: net.id }); }, 1000);
+}
+addEventListener("beforeunload", () => { try { net.send({ t: "bye" }); } catch (e) {} });
+const enc = o => btoa(JSON.stringify(o)), dec = s => JSON.parse(atob(s.trim()));
+function rtcSetup(isHost) {
+  pcRTC = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+  pcRTC.onconnectionstatechange = () => { if (["failed", "closed", "disconnected"].includes(pcRTC && pcRTC.connectionState) && net.connected) netDown("Connection lost."); };
+  const attach = ch => {
+    dcRTC = ch; ch.onopen = () => { net.raw = m => ch.send(JSON.stringify(m)); net.connected = true; netUp(isHost); if (inGame && isHost) sendItems(); };
+    ch.onmessage = e => { try { onNet(JSON.parse(e.data)); } catch (err) {} }; ch.onclose = () => { if (net.connected) netDown("The other player left."); };
+  };
+  if (isHost) attach(pcRTC.createDataChannel("rw")); else pcRTC.ondatachannel = e => attach(e.channel);
+}
+const iceDone = pc => new Promise(res => { if (pc.iceGatheringState === "complete") return res(); const t = setTimeout(res, 3500); pc.onicegatheringstatechange = () => { if (pc.iceGatheringState === "complete") { clearTimeout(t); res(); } }; });
+async function rtcHost() {
+  netDown(); net.mode = "rtc"; rtcSetup(true); mpStatus("Creating code...");
+  await pcRTC.setLocalDescription(await pcRTC.createOffer()); await iceDone(pcRTC);
+  $("mpOffer").value = enc(pcRTC.localDescription); $("mpHostBox").classList.remove("hide"); $("mpJoinBox").classList.add("hide"); mpStatus("Send the code to your friend, then paste their reply code.");
+}
+async function rtcAccept() {
+  try { await pcRTC.setRemoteDescription(dec($("mpAnswerIn").value)); mpStatus("Connecting..."); } catch (e) { mpStatus("That reply code is not valid."); }
+}
+async function rtcJoin() {
+  let offer; try { offer = dec($("mpOfferIn").value); } catch (e) { return mpStatus("That code is not valid."); }
+  netDown(); net.mode = "rtc"; rtcSetup(false); mpStatus("Creating reply code...");
+  await pcRTC.setRemoteDescription(offer); await pcRTC.setLocalDescription(await pcRTC.createAnswer()); await iceDone(pcRTC);
+  $("mpAnswer").value = enc(pcRTC.localDescription); mpStatus("Send the reply code back to the host.");
+}
+const copyOf = id => { const t = $(id); t.select && t.select(); try { navigator.clipboard.writeText(t.value); } catch (e) { try { document.execCommand("copy"); } catch (e2) {} } };
+$("mpLocal").onclick = startLocal;
+$("mpHost").onclick = () => { rtcHost().catch(e => mpStatus("Could not create a code: " + e.message)); };
+$("mpJoin").onclick = () => { netDown(); $("mpJoinBox").classList.remove("hide"); $("mpHostBox").classList.add("hide"); mpStatus("Paste the host's code below."); };
+$("mpMakeAnswer").onclick = () => { rtcJoin().catch(e => mpStatus("Could not join: " + e.message)); };
+$("mpConnect").onclick = rtcAccept;
+$("mpCopyOffer").onclick = () => copyOf("mpOffer"); $("mpCopyAnswer").onclick = () => copyOf("mpAnswer");
+$("mpDisc").onclick = () => { net.send({ t: "bye" }); netDown("Disconnected."); };
+function sendState(now) { // ~20 packets per second
+  if (!net.connected || now - lastNetSend < 50) return; lastNetSend = now; const p = player;
+  net.send({ t: "s", x: p.x, y: p.y, z: p.z, a: p.angle, ph: p.phase, am: p.amp, gr: p.ground ? 1 : 0, fl: p.flying ? 1 : 0, dd: p.dead ? 1 : 0, fa: p.fall, em: p.emote ? p.emote.t : -1, us: p.useT, hd: heldType(), sh: p.shield, hp: p.hp, k: stats.p.k, d: stats.p.d, tm: p.team, cl: p.climbing ? 1 : 0 });
+  if (net.host) net.send({ t: "b", off: S.bot ? 0 : 1, x: bot.x, y: bot.y, z: bot.z, a: bot.angle, ph: bot.phase, am: bot.amp, dd: bot.dead ? 1 : 0, fa: bot.fall, hp: bot.hp, at: bot.atk, k: stats.b.k, d: stats.b.d });
+  if (!net.pingT || now - net.pingT > 1000) { net.pingT = now; net.send({ t: "ping", ts: performance.now() }); }
+}
+
+// ---------- Mouse lock (shift lock + hold right mouse to look) ----------
+let settingsOpen = false, ignoreUnlock = false, openedAt = 0, rmb = false, resetArmed = false, leaveArmed = false;
+function lockMouse() {
+  if (!inGame || document.pointerLockElement || settingsOpen || typing || packOpen || qcOpen) return;
+  const r = canvas.requestPointerLock && canvas.requestPointerLock(); if (r && r.catch) r.catch(() => {});
+}
+function unlock() { if (document.pointerLockElement === canvas) { ignoreUnlock = true; document.exitPointerLock(); } }
+function syncLock() { if (lockOn()) lockMouse(); else if (!rmb) unlock(); }
+document.addEventListener("pointerlockchange", () => { // Esc while mouse-locked -> menu
+  if (inGame && document.pointerLockElement !== canvas && !typing && !settingsOpen && !packOpen && !qcOpen && !ignoreUnlock) openSettings();
+  ignoreUnlock = false;
+});
+
+// ---------- Settings menu (tabs) ----------
+let lbKey = "";
+function labels() { $("vSens").textContent = S.sens.toFixed(1) + "x"; $("vFov").textContent = S.fov + "\u00B0"; $("vFogD").textContent = S.fogDist; }
+function layout() {
+  $("controls").classList.toggle("hide", !S.ctl); chatBox.classList.toggle("hide", !S.chat); $("sc").classList.toggle("hide", !S.chat);
+  $("fps").classList.toggle("hide", !S.fps && !S.ping); $("stats").classList.toggle("hide", !S.stats);
+  [FR, FG, FB] = FOGC[S.fogCol] || FOGC.black; fogK = S.fog ? 1 / S.fogDist : 0; lbKey = "";
+}
+function bind(id, key, kind, after) {
+  const el = $(id); if (kind === "chk") el.checked = S[key]; else el.value = S[key];
+  el.oninput = () => { S[key] = kind === "chk" ? el.checked : kind === "str" ? el.value : +el.value; save(); labels(); layout(); after && after(); };
+}
+bind("sSens", "sens", "num");
+bind("sFov", "fov", "num", () => { BASE_FOV = S.fov * Math.PI / 180; zoomFov = BASE_FOV; });
+bind("sInv", "inv", "chk");
+bind("sLock", "lock", "chk", () => { if (S.lock) setView(1); });
+bind("sClick", "clickWalk", "chk", () => { cancelRoute(); });
+bind("sQual", "qual", "num", () => { W = S.qual; resize(); });
+bind("sVsync", "vsync", "chk"); bind("sFpsLim", "fpsLimit", "num");
+bind("sSky", "sky", "chk"); bind("sMod3d", "models3d", "chk"); bind("sDeath", "death", "str"); bind("sPath", "pathDebug", "chk"); bind("sWheel", "wheel", "str"); bind("sFog", "fog", "chk"); bind("sFogD", "fogDist", "num"); bind("sFogC", "fogCol", "str"); bind("sShadow", "shadows", "chk");
+bind("sBot", "bot", "chk", () => { if (S.bot) botRespawn(); });
+bind("sDie", "dying", "chk", () => { if (!S.dying && !player.dead && player.hp < 1) player.hp = 1; });
+bind("sCol", "charCol", "chk");
+bind("sFps", "fps", "chk"); bind("sPing", "ping", "chk"); bind("sCtl", "ctl", "chk"); bind("sChat", "chat", "chk");
+bind("sWire", "wire", "chk"); bind("sHit", "hitbox", "chk"); bind("sStats", "stats", "chk");
+labels(); layout();
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("hide", t.id !== "t-" + b.dataset.t));
+});
+
+function armReset(on) { resetArmed = on; if (on) leaveArmed = false; $("respawn").classList.toggle("armed", resetArmed); $("leave").classList.toggle("armed", leaveArmed); }
+function armLeave(on) { leaveArmed = on; if (on) resetArmed = false; $("leave").classList.toggle("armed", leaveArmed); $("respawn").classList.toggle("armed", resetArmed); }
+function doReset() { armReset(false); closeSettings(); if (!player.dead) player.hp = 0; } // reset = die, then respawn (bypasses shield + dying setting)
+function openSettings() {
+  if (settingsOpen || !inGame) return; settingsOpen = true; openedAt = performance.now(); armReset(false); armLeave(false);
+  for (const k in keys) keys[k] = false; if (typing) closeChat();
+  $("settings").classList.remove("hide"); unlock();
+}
+function closeSettings() { settingsOpen = false; armReset(false); armLeave(false); $("settings").classList.add("hide"); if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); syncLock(); }
+$("resume").onclick = closeSettings;
+$("respawn").onclick = doReset;
+document.addEventListener("click", e => { if (e.target.tagName === "BUTTON") e.target.blur(); }); // keep Space from re-clicking buttons
+
+// ---------- Main menu: play / leave game ----------
+function startGame() {
+  items = worldItems(); inv.hot.fill(null); inv.pack.fill(null); inv.sel = -1; refreshInv();
+  stats.p.k = stats.p.d = stats.b.k = stats.b.d = 0; botRespawn(); cancelRoute(); respawn(true); setView(S.lock ? 1 : 0);
+  $("menu").classList.add("hide"); inGame = true; lastNetSend = 0; if (net.connected && net.host) sendItems();
+  addMsg("", "You are in the game. Good luck!", true);
+}
+function leaveGame() {
+  closeSettings(); closeChat(); if (qcOpen) closeQC(); if (packOpen) togglePack();
+  net.send({ t: "bye" }); netDown("Not connected"); inGame = false; unlock();
+  $("menu").classList.remove("hide"); $("mpHostBox").classList.add("hide"); $("mpJoinBox").classList.add("hide");
+}
+$("playBtn").onclick = startGame; $("leave").onclick = leaveGame;
+
+// ---------- Input ----------
+const keys = {};
+addEventListener("keydown", e => {
+  if (!inGame) { if (e.code === "Enter" && !/TEXTAREA|INPUT/.test((e.target || {}).tagName || "")) startGame(); return; }
+  if (typing) { if (e.code === "Enter") sendChat(); else if (e.code === "Escape") closeChat(); return; }
+  if (e.code === "Escape") { if (qcOpen) closeQC(); else if (!settingsOpen) openSettings(); else if (performance.now() - openedAt > 250) closeSettings(); return; }
+  if (settingsOpen) { // Roblox-style reset: press R, then Enter
+    if (e.code === "KeyR") armReset(true); else if (e.code === "KeyL") armLeave(true); // R then Enter = respawn, L then Enter = leave game
+    else if (e.code === "Enter" && (resetArmed || leaveArmed)) { e.preventDefault(); if (leaveArmed) leaveGame(); else doReset(); }
+    return;
+  }
+  if (e.code === "Enter" || e.key === "/") { e.preventDefault(); if (S.chat) openChat(); return; }
+  if (e.code === "Backslash") { e.preventDefault(); qcOpen ? closeQC() : openQC(); return; }
+  if (qcOpen) { // quick chat navigation: 1-9 choose, Backspace goes back
+    const q = /^Digit([1-9])$/.exec(e.code); if (q) { qcPick(+q[1] - 1); return; }
+    if (e.code === "Backspace") { e.preventDefault(); qcBack(); return; }
+  }
+  keys[e.code] = true;
+  if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Backspace"].includes(e.code)) e.preventDefault();
+  if (e.code === "KeyV") { setView(S.lock ? (viewMode ? 0 : 1) : (viewMode + 1) % 3); syncLock(); }
+  if (e.code === "KeyC") { S.lock = !S.lock; $("sLock").checked = S.lock; if (S.lock) setView(1); save(); syncLock(); }
+  if (e.code === "KeyR") zoomFov = BASE_FOV;
+  if (e.code === "Backquote") togglePack();
+  if (e.code === "Backspace" && inv.sel >= 0) dropToGround("hot", inv.sel);
+  const m = /^Digit([1-6])$/.exec(e.code); if (m) equip(+m[1] - 1);
+});
+addEventListener("keyup", e => keys[e.code] = false);
+addEventListener("blur", () => { for (const k in keys) keys[k] = false; });
+addEventListener("wheel", e => {
+  if (!inGame || settingsOpen || typing) return;
+  if (S.wheel === "zoom") { zoomFov = Math.max(FOV_MIN, Math.min(FOV_MAX, zoomFov + e.deltaY * 0.001)); return; }
+  camDistT = Math.max(0, Math.min(300, camDistT + e.deltaY * .25)); // scroll out: first person -> third person; scroll in: back again
+  if (camDistT >= 12 && viewMode === 0) { viewMode = 1; camDist = Math.max(camDist, 12); syncLock(); }
+}, { passive: true });
+canvas.addEventListener("contextmenu", e => e.preventDefault());
+canvas.addEventListener("mousedown", e => {
+  if (!inGame || settingsOpen) return; if (typing) closeChat();
+  if (e.button === 2) { rmb = true; lockMouse(); }              // hold right mouse = turn camera
+  else if (e.button === 0) {
+    if (lockOn() && !document.pointerLockElement) lockMouse();
+    else if (S.clickWalk && !lockOn() && !held()) {              // click to walk (when no tool is equipped)
+      const r = canvas.getBoundingClientRect(), t = pickFloor((e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H);
+      if (t && !player.dead) startRoute(t);
+    } else useTool();
+  }
+});
+addEventListener("mouseup", e => { if (e.button === 2) { rmb = false; syncLock(); } });
+addEventListener("mousemove", e => {
+  if (document.pointerLockElement !== canvas || player.dead) return;
+  const k = (player.fov / BASE_FOV) * S.sens; // slower look while zoomed
+  player.angle += e.movementX * 0.003 * k;
+  player.pitch = Math.max(-H * .4, Math.min(H * .4, player.pitch - e.movementY * 0.5 * k * (S.inv ? -1 : 1)));
+});
+
+// ---------- Update (fixed 60 ticks per second) ----------
+function update() {
+  const p = player, c = Math.cos(p.angle), s = Math.sin(p.angle);
+  camDist += (camDistT - camDist) * .25; // smooth wheel zoom between first and third person
+  if (viewMode !== 0 && camDistT < 12 && camDist < 14) { viewMode = 0; camDist = 0; syncLock(); }
+  stepDebris(player); stepDebris(bot); stepDebris(remote);
+  updateBot(); updateRemote();
+  p.heldType = heldType();
+  if (!p.dead && p.hp <= 0) die();
+  if (p.dead) { // fall over, then respawn after ~2.5 s
+    p.fall = Math.min(1.45, p.fall + .04); p.amp = 0; physZ(p, true);
+    if (++p.deathT > 150) respawn();
+    return;
+  }
+  if (p.shield > 0) p.shield--;
+  const lockActive = lockOn();
+  if (!lockActive) {
+    if (keys.KeyA || keys.ArrowLeft) p.angle -= p.rotSpeed * (p.fov / BASE_FOV);
+    if (keys.KeyD || keys.ArrowRight) p.angle += p.rotSpeed * (p.fov / BASE_FOV);
+  } else {
+    if (keys.ArrowLeft) p.angle -= p.rotSpeed * (p.fov / BASE_FOV);
+    if (keys.ArrowRight) p.angle += p.rotSpeed * (p.fov / BASE_FOV);
+  }
+  if (keys.ArrowUp) p.pitch = Math.min(H * .4, p.pitch + 3);
+  if (keys.ArrowDown) p.pitch = Math.max(-H * .4, p.pitch - 3);
+
+  let fwd = (keys.KeyW ? 1 : 0) - (keys.KeyS ? 1 : 0), str = (keys.KeyE ? 1 : 0) - (keys.KeyQ ? 1 : 0);
+  if (lockActive) str += (keys.KeyD ? 1 : 0) - (keys.KeyA ? 1 : 0); // shift lock: A/D strafe
+  str = Math.max(-1, Math.min(1, str));
+
+  let step = null; // click to walk: follow the planned route (it walks, steps up and jumps gaps by itself)
+  if (p.route) { if (fwd || str) cancelRoute(); else { step = routeStep(p); if (!step) cancelRoute(); } }
+  const walking = !!step, wantsMove = fwd || str || walking;
+  if (p.stamina < 1) p.tired = true; else if (p.stamina > 25) p.tired = false;
+  p.sprinting = !p.tired && wantsMove && ((keys.ShiftLeft || keys.ShiftRight) || !!(step && step.sprint));
+  p.stamina = Math.max(0, Math.min(100, p.stamina + (p.sprinting ? -0.7 : 0.3)));
+  const sp = (p.sprinting ? p.sprint : p.walk) * (p.flying ? 1.4 : 1);
+
+  if (fwd && str) { fwd *= .707; str *= .707; }
+  let mx = (c * fwd - s * str) * sp, my = (s * fwd + c * str) * sp, autoJump = false;
+  if (walking) {
+    const R = p.route, leg = R.legs[R.i]; let dx = step.dx, dy = step.dy;
+    if (R.detour > 0) { R.detour--; const a2 = Math.atan2(dy, dx) + R.dsg * 1.25, dd = Math.hypot(dx, dy); dx = Math.cos(a2) * dd; dy = Math.sin(a2) * dd; } // sidestep around an obstacle
+    const d = Math.hypot(dx, dy) || 1;
+    let da = Math.atan2(dy, dx) - p.angle; da = Math.atan2(Math.sin(da), Math.cos(da)); p.angle += da * .25;
+    mx = Math.min(sp, d) * dx / d; my = Math.min(sp, d) * dy / d;
+    if (step.jump) autoJump = true;
+    if (p.ground && !p.noclip) {
+      const ax = p.x + mx / sp * 6, ay = p.y + my / sp * 6, bk = blockedAt(p, ax, ay);
+      if (bk && !bk.kill && bk.z1 - p.z <= 24) autoJump = true;                                   // hurdle or step in the way: jump it
+      if (lavaAt(ax, ay, p.z) && !(leg && leg.type === "jump")) { cancelRoute("That way leads into lava."); mx = my = 0; } // never walk into lava
+    }
+  }
+
+  if (wantsMove) p.phase += p.sprinting ? .3 : .2;
+  p.amp += ((wantsMove ? (p.sprinting ? 1 : .6) : 0) - p.amp) * .2;
+
+  if (p.emote && (++p.emote.t > 150 || wantsMove || keys.Space)) p.emote = null; // moving cancels the emote
+  if (p.useT && ++p.useT > 20) p.useT = 0;
+
+  if (keys.KeyZ) zoomFov = Math.max(FOV_MIN, zoomFov - 0.02);
+  if (keys.KeyX) zoomFov = Math.min(FOV_MAX, zoomFov + 0.02);
+  p.fov += ((zoomFov + (p.sprinting ? 0.12 : 0)) - p.fov) * 0.15;
+
+  // climbing a truss: walk into it and hold W (S = down, Space = jump off)
+  if (p.noClimb > 0) p.noClimb--;
+  const tr = p.flying || p.noclip ? null : trussAt(p);
+  if (p.climbing) {
+    if (!tr || keys.Space) { if (tr && keys.Space) { const away = Math.atan2(p.y - tr.cy, p.x - tr.cx); p.x += Math.cos(away) * 4; p.y += Math.sin(away) * 4; p.vz = 3.6; p.ground = false; } p.climbing = false; p.noClimb = 14; }
+  } else if (tr && fwd > 0 && !p.noClimb && !keys.Space) { p.climbing = true; p.vz = 0; cancelRoute(); }
+  if (p.climbing) { mx = 0; my = 0; }
+  // horizontal movement
+  if (!p.noclip) depenetrate(p);
+  if (p.noclip) { p.x = Math.max(-880, Math.min(2280, p.x + mx)); p.y = Math.max(-880, Math.min(1180, p.y + my)); } // /noclip: through walls
+  else {
+    const moved = moveActor(p, mx, my);
+    if (p.route && walking) { // stuck against something? sidestep a few times, then give up
+      const R = p.route, mv = Math.hypot(p.x - R.lx, p.y - R.ly); R.lx = p.x; R.ly = p.y;
+      if (mv < .3 && p.ground && !autoJump) { if (++R.stuck > 22) { R.stuck = 0; if (R.detours++ < 4) { R.detour = 40; R.dsg = Math.random() < .5 ? -1 : 1; } else cancelRoute("I'm stuck."); } } else R.stuck = 0;
+    }
+  }
+  // vertical movement
+  if (p.climbing) { // on a truss: W climbs up, S climbs down, you hug the truss
+    const dz = (fwd > 0 ? 1 : fwd < 0 ? -1 : 0) * 1.7; p.z += dz; p.vz = 0; if (dz) p.phase += .14;
+    p.x += (tr.cx - p.x) * .25; p.y += (tr.cy - p.y) * .25; let da = Math.atan2(tr.cy - p.y, tr.cx - p.x) - p.angle; da = Math.atan2(Math.sin(da), Math.cos(da)); p.angle += da * .3;
+    physZ(p, false);
+    if (p.ground && dz < 0) { p.climbing = false; p.noClimb = 14; }
+    else if (p.z >= tr.z1 - 1 && dz > 0) { p.climbing = false; p.noClimb = 24; p.vz = 3.4; p.ground = false; } // reached the top: hop over it
+  } else if (p.flying) { // /fly: Space up, F or Ctrl down
+    p.z = Math.max(-50, Math.min(FLY_MAX, p.z + ((keys.Space ? 1 : 0) - ((keys.KeyF || keys.ControlLeft) ? 1 : 0)) * 2.5)); physZ(p, false);
+  } else {
+    if ((keys.Space || autoJump) && p.ground) { p.vz = JUMP_FORCE; p.ground = false; }
+    physZ(p, true);
+  }
+  if (p.z < VOID_Z) { // fell off the world
+    if (S.dying) { p.hp = 0; } else { const sp0 = spawnFor(); p.x = sp0.x; p.y = sp0.y; p.z = sp0.z; p.vz = 0; addMsg("", "You fell off the world.", true); }
+  }
+
+  if (touchesKill(p)) hurt(100); // lava / kill boxes: touching one with your body hurts (a lot)
+  if (p.ground && p.floorBox && p.floorBox.team !== undefined && p.floorBox.team !== p.team) setTeam(p.floorBox.team); // team spawn pads
+  if (!p.finished && p.ground && Math.abs(p.z - COURSE.fin.top) < 1.5 && overlapXY(COURSE.fin.box, p.x, p.y, RADIUS - 6)) { // obstacle course goal
+    p.finished = true; addMsg("", "You finished the obstacle course!", true);
+  }
+
+  const now = performance.now();
+  for (const it of items.slice()) if (now > it.noPick && Math.hypot(it.x - p.x, it.y - p.y) < 22 && Math.abs(it.z - p.z) < 40) pickup(it);
+}
+
+// ---------- Rendering ----------
+function render(now) {
+  const p = player, lockActive = lockOn();
+  let cx, cy, camZ, camA, horizon, fov = p.fov;
+  if (!inGame) { // main menu: slowly orbit the world
+    const t = now * .00012; cx = 420 + Math.cos(t) * 620; cy = 20 + Math.sin(t) * 520; camA = Math.atan2(20 - cy, 420 - cx); camZ = 150; horizon = H / 2 - H * .1; fov = 1.15;
+  } else {
+    cx = p.x; cy = p.y; camA = p.angle; camZ = p.z + EYE - (viewMode ? 0 : p.fall * 22); horizon = H / 2 + p.pitch;
+    if (viewMode) { // third person: camera sits behind (or in front of) the avatar and never goes through walls
+      const sg = viewMode === 1 ? -1 : 1, fx = Math.cos(p.angle), fy = Math.sin(p.angle), lat = lockActive ? 14 : 0, dist = Math.max(12, camDist);
+      const ox = p.x, oy = p.y, oz = p.z + EYE, vx = sg * fx * dist - fy * lat, vy = sg * fy * dist + fx * lat, vz = dist * .12, L = Math.hypot(vx, vy, vz);
+      horizon -= H * .1 * Math.min(1, dist / 105); // look slightly down so the whole avatar is in frame
+      const h = raycast(ox, oy, oz, vx / L, vy / L, vz / L, L), k = h ? Math.max(6, h.t - 6) / L : 1;
+      cx = ox + vx * k; cy = oy + vy * k; camZ = oz + vz * k;
+      if (viewMode === 2) camA += Math.PI;
+    }
+  }
+  const dirX = Math.cos(camA), dirY = Math.sin(camA), proj = (W / 2) / Math.tan(fov / 2);
+  const C = lastC = { cx, cy, camZ, camA, dirX, dirY, rX: -dirY, rY: dirX, proj, horizon };
+
+  st.faces = 0; st.tris = 0;
+  updateLights(now); zb.fill(0);
+  if (S.wire) buf.fill(0xFF0C0A06); else renderBoxes(C, now);
+  if (!S.wire) { if (S.models3d) drawItems3D(C, now); else drawBillboards(C, now); }
+  // characters: culled (frustum + occlusion); the bot drops to one flat colour when small
+  if (botOn()) bot.lod = drawCharacter(bot, C); else bot.lod = 2;
+  if (remoteShown()) drawCharacter(remote, C);
+  if (p.debris) drawDebris(p, C); else if (viewMode || !inGame) drawActor(p, C);
+  if (inGame) drawTarget3D(C);
+  if (S.shadows && !S.wire) drawDecals(C);
+  if (!S.wire) { if (S.sky) fillSky(C); else fillFlat(); }
+  if (inGame && S.models3d) { drawBubble3D(C); drawViewModel(C, now); } else vmFlame = null;
+  ctx.putImageData(img, 0, 0);
+
+  if (S.wire) drawWire(C);
+  if (S.pathDebug && inGame) drawPathDebug(C);
+  if (S.hitbox) { // collision boxes of the characters
+    ctx.lineWidth = 1;
+    for (const [a, col, dim, show] of [[p, "#00e5ff", "rgba(0,229,255,.3)", viewMode > 0], [bot, "#ff3b30", "rgba(255,59,48,.3)", botOn() && !bot.dead], [remote, "#ff9a1f", "rgba(255,154,31,.3)", remoteShown()]]) {
+      if (!show) continue;
+      ctx.strokeStyle = dim; ctx.beginPath(); box3(C, a.x - RADIUS, a.y - RADIUS, a.z, a.x + RADIUS, a.y + RADIUS, a.z + BODY_H); ctx.stroke(); // wall-collision box (dim)
+      ctx.strokeStyle = col; ctx.beginPath(); for (const pt of BODY_PARTS) bodyBox3(C, a, pt); ctx.stroke();                                      // real body (bright): this is what blocks characters
+    }
+  }
+  if (remoteShown() && !remote.dead) { // name tag above the other player
+    const q = proj3(C, remote.x, remote.y, remote.z + BODY_H + 8);
+    if (q[2] > NEAR && q[0] > 0 && q[0] < W && zb[Math.max(0, Math.min(H - 1, q[1] | 0)) * W + Math.max(0, Math.min(W - 1, q[0] | 0))] <= 1 / q[2] * 1.05) {
+      ctx.font = "9px monospace"; ctx.textAlign = "center"; ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(q[0] - 24, q[1] - 9, 48, 11); ctx.fillStyle = "#ffd65a"; ctx.fillText(remote.name, q[0], q[1]); ctx.textAlign = "left";
+    }
+  }
+  // torch flame glow: a soft light right on the flame (third person: hidden when the avatar's body is in front of it)
+  const hh = held();
+  if (inGame && viewMode && hh && hh.light && !p.dead) {
+    const q = proj3(C, toolPos[0], toolPos[1], toolPos[2] + 1.5), ix = Math.max(0, Math.min(W - 1, q[0] | 0)), iy = Math.max(0, Math.min(H - 1, q[1] | 0));
+    if (q[2] > 3 && zb[iy * W + ix] <= (1 / q[2]) * 1.12) {
+      const r = 9 * (1 + .05 * Math.sin(now * .006)) * C.proj / q[2], gr = ctx.createRadialGradient(q[0], q[1], 0, q[0], q[1], r);
+      gr.addColorStop(0, "rgba(255,225,140,.55)"); gr.addColorStop(.45, "rgba(255,160,50,.22)"); gr.addColorStop(1, "rgba(255,120,0,0)");
+      ctx.globalCompositeOperation = "lighter"; ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(q[0], q[1], r, 0, 7); ctx.fill(); ctx.globalCompositeOperation = "source-over";
+    }
+  }
+  if (inGame && !viewMode && hh && !p.dead) { // first person: a 3D model (drawn above) or the classic flat icon
+    if (S.models3d) {
+      if (hh.light && vmFlame && vmFlame[2] > 2) { const r = 2.6 * (1 + .05 * Math.sin(now * .006)) * C.proj / vmFlame[2], gr = ctx.createRadialGradient(vmFlame[0], vmFlame[1], 0, vmFlame[0], vmFlame[1], r);
+        gr.addColorStop(0, "rgba(255,225,140,.5)"); gr.addColorStop(.45, "rgba(255,160,50,.2)"); gr.addColorStop(1, "rgba(255,120,0,0)");
+        ctx.globalCompositeOperation = "lighter"; ctx.fillStyle = gr; ctx.fillRect(vmFlame[0] - r, vmFlame[1] - r, r * 2, r * 2); ctx.globalCompositeOperation = "source-over"; }
+    } else {
+      const sz = Math.round(H * .3), sw = p.useT ? Math.sin(Math.PI * p.useT / 20) : 0;
+      const tx = W * .78 + Math.sin(p.phase) * p.amp * 3, ty = H * 1.02 - Math.abs(Math.cos(p.phase)) * p.amp * 3, rot = -.45 - sw * 1.1;
+      ctx.save(); ctx.translate(tx, ty); ctx.rotate(rot); ctx.drawImage(ICONS[heldType()], -sz / 2, -sz, sz, sz); ctx.restore();
+      if (hh.light) { // the flame is in the upper part of the icon
+        const gx = tx + sz * .74 * Math.sin(rot), gy = ty - sz * .74 * Math.cos(rot), r = sz * .4 * (1 + .05 * Math.sin(now * .006)), gr = ctx.createRadialGradient(gx, gy, 0, gx, gy, r);
+        gr.addColorStop(0, "rgba(255,225,140,.55)"); gr.addColorStop(.45, "rgba(255,160,50,.2)"); gr.addColorStop(1, "rgba(255,120,0,0)");
+        ctx.globalCompositeOperation = "lighter"; ctx.fillStyle = gr; ctx.fillRect(gx - r, gy - r, r * 2, r * 2); ctx.globalCompositeOperation = "source-over";
+      }
+    }
+  }
+  if (inGame && !S.models3d) drawBubble(C);
+}
+
+function hud() {
+  const p = player;
+  $("hpFill").style.width = p.hp + "%";
+  $("hpFill").style.background = p.hp > 50 ? "#3ddc4b" : p.hp > 25 ? "#f5a623" : "#e03c3c"; // green -> orange (half lost) -> red (low)
+  $("hpText").textContent = `HP ${Math.ceil(p.hp)} / 100`;
+  $("stFill").style.width = p.stamina + "%";
+  $("stFill").style.background = p.tired ? "#e74c3c" : p.sprinting ? "#f1c40f" : "#3498db";
+  const lk = lockOn(), locked = document.pointerLockElement === canvas;
+  $("info").textContent = `ZOOM ${(BASE_FOV / p.fov).toFixed(1)}x \u00B7 ${VIEW_NAMES[viewMode]}${lk ? (locked ? " \u00B7 SHIFT LOCK" : " \u00B7 SHIFT LOCK (click to lock mouse)") : ""}${p.flying ? " \u00B7 FLYING" : ""}${p.noclip ? " \u00B7 NOCLIP" : ""}${p.shield > 0 ? " \u00B7 SPAWN SHIELD " + Math.ceil(p.shield / 60) + "s" : ""}${S.wire ? " \u00B7 WIREFRAME" : ""}${net.connected ? " \u00B7 MULTIPLAYER" : ""}`;
+  $("lockIcon").classList.toggle("hide", !(inGame && lk && locked));
+  $("dead").classList.toggle("hide", !p.dead);
+  // leaderboard: everyone currently in the game (name, team, KOs, deaths, optional ping)
+  const pg = ping.toFixed(1), rows = [[myName(), player.team, stats.p.k, stats.p.d, 2, S.ping ? (net.connected ? pg + " ms" : "0 ms") : ""]];
+  if (remoteShown()) rows.push([remote.name, remote.team, remote.k, remote.d, 1, S.ping ? pg + " ms" : ""]);
+  if (botOn()) rows.push(["Bot", "", stats.b.k, stats.b.d, 1, S.ping ? "AI" : ""]);
+  const key = JSON.stringify(rows) + S.ping;
+  if (key !== lbKey) {
+    lbKey = key; const lb = $("lb"); lb.textContent = "";
+    for (const r of [["Players", null, "KO", "Deaths", 0, "Ping"], ...rows]) {
+      const d = document.createElement("div"); d.className = "lbr" + (S.ping ? " p" : "") + (r[4] === 0 ? " h" : r[4] === 2 ? " me" : "");
+      const tm = r[1] && TEAMS[r[1]] ? TEAMS[r[1]] : null, cells = [r[0], r[1] === null ? "Team" : tm ? tm.name : "-", r[2], r[3]]; if (S.ping) cells.push(r[5]);
+      cells.forEach((txt, i) => { const s = document.createElement("span"); s.textContent = txt; if (i === 1 && tm) s.style.color = tm.color; d.appendChild(s); });
+      lb.appendChild(d);
+    }
+  }
+}
+$("ver").textContent = $("verTxt").textContent = `redWalls Client ${VERSION} (W.I.P)`; $("menuVer").textContent = `Client ${VERSION} (W.I.P) by coolguy82`;
+botRespawn(); refreshInv();
+
+// ---------- Ping (local loopback; multiplayer uses the real round trip) ----------
+const pc = new MessageChannel();
+pc.port1.onmessage = e => pc.port1.postMessage(e.data);
+pc.port2.onmessage = e => { if (!net.connected) ping = Math.max(0, performance.now() - e.data); };
+setInterval(() => pc.port2.postMessage(performance.now()), 1000);
+
+// ---------- Resource stats ----------
+let gpuName = "unknown";
+try {
+  const gl = document.createElement("canvas").getContext("webgl"), ext = gl && gl.getExtension("WEBGL_debug_renderer_info");
+  if (ext) gpuName = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL); else if (gl) gpuName = "hidden by browser";
+  const lose = gl && gl.getExtension("WEBGL_lose_context"); if (lose) lose.loseContext();
+} catch (e) {}
+const fmt = b => b < 1024 ? Math.round(b) + " B" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(2) + " MB";
+let uMs = 0, rMs = 0, workEma = 0, dtEma = 16.7;
+function statsText() {
+  const texB = [brick, stone, wood, metal, lava, floorTex, spawnTex, ceilTex, plate, roof, plaster, woodFloor, leaf, tBlue, tOrange, tPurple, tPink, tGold, tGrey, tRed, tWhite].reduce((a, t) => a + t.d.byteLength, 0) + SKY.d.byteLength + blobTex.d.byteLength + aoTex.d.byteLength;
+  const faceCount = boxes.reduce((a, b) => a + b.faces.length, 0);
+  const worldB = boxes.length * 96 + faceCount * 160 + items.length * 40;
+  const rendB = img.data.byteLength + zb.byteLength + skyCu.byteLength * 3;
+  const lightB = LS.length * 40 + ground.length * 8 + 16 * 8;
+  const physB = SOLID.length * 56 + 3 * 28 * 8;
+  const total = texB + worldB + rendB + lightB + physB, fps = 1000 / dtEma;
+  const m = performance.memory, ram = m ? `${fmt(m.usedJSHeapSize)} used / ${fmt(m.totalJSHeapSize)} heap` : "n/a (browser hides it)";
+  const cpu = Math.min(100, workEma / dtEma * 100);
+  return `RESOURCES (data sizes, estimated)
+World        ${fmt(worldB)} (${boxes.length} boxes, ${faceCount} faces)
+Textures     ${fmt(texB)} (incl. skybox)
+Rendering    ${fmt(rendB)} (framebuffer + depth)
+Lighting     ${fmt(lightB)}
+Physics      ${fmt(physB)} (${SOLID.length} solid boxes)
+Total        ${fmt(total)}
+CULLING (frustum + occlusion)
+Boxes drawn  ${st.boxes}/${st.boxesTot}
+Items drawn  ${st.items}/${st.itemsTot}
+Bot          ${["full model", "single colour, no anim", "culled (hidden)"][bot.lod]}
+Per frame    ${st.faces} faces, ${st.tris} triangles
+RAM  ${ram}
+CPU  ~${cpu.toFixed(0)}% of frame time (main thread)
+     physics+AI ${uMs.toFixed(2)} ms, render ${rMs.toFixed(2)} ms
+GPU  ${gpuName}
+     upload ~${fmt(W * H * 4)}/frame = ${fmt(W * H * 4 * fps)}/s
+     (browsers don't report real GPU load)`;
+}
+
+// ---------- Main loop (V-Sync / FPS limit) + FPS counter ----------
+const STEP_MS = 1000 / 60;
+const lc = new MessageChannel(); lc.port1.onmessage = () => gameLoop(performance.now()); // fast loop used when V-Sync is off
+const schedule = () => S.vsync ? requestAnimationFrame(gameLoop) : lc.port2.postMessage(0);
+let lastT = performance.now(), acc = 0, fpsT = lastT, frames = 0;
+function gameLoop(now) {
+  const minF = S.fpsLimit ? 1000 / S.fpsLimit : 0;
+  if (minF && now - lastT < minF - 1.5) { schedule(); return; } // FPS limit: skip this frame
+  const dt = Math.max(0, Math.min(100, now - lastT)); lastT = now; frames++;
+  if (now - fpsT >= 500) {
+    $("fps").textContent = (S.fps ? "FPS " + Math.round(frames * 1000 / (now - fpsT)) : "") + (S.fps && S.ping ? " \u00B7 " : "") + (S.ping ? "PING " + ping.toFixed(1) + " ms" : "");
+    if (S.stats) $("stats").textContent = statsText();
+    frames = 0; fpsT = now;
+  }
+  const t0 = performance.now();
+  if (!inGame || settingsOpen) acc = 0;
+  else { acc += dt; while (acc >= STEP_MS - 1) { update(); acc -= STEP_MS; } sendState(now); } // same game speed on 60/144 Hz screens
+  const t1 = performance.now(); render(now); hud(); const t2 = performance.now();
+  uMs += (t1 - t0 - uMs) * .1; rMs += (t2 - t1 - rMs) * .1; workEma += (t2 - t0 - workEma) * .1; dtEma += (dt - dtEma) * .1;
+  schedule();
+}
+schedule();
+</script>
+</body>
+</html>

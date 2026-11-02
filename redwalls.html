@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>~*~ The RedWall Forum ~*~</title>
+    <style>
+        /* Base styles & Retro Grid Background */
+        body {
+            background-color: #2b2e33;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #dcdcdc;
+            font-family: Georgia, "Times New Roman", Times, serif;
+            font-size: 13px;
+            margin: 20px auto;
+            max-width: 980px;
+            padding: 0 10px;
+        }
+
+        a {
+            color: #ffaa00;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            color: #ff7700;
+            text-decoration: underline;
+        }
+
+        /* Header Frame */
+        .header-container {
+            text-align: center;
+            margin-bottom: 12px;
+            border: 3px double #ff6600;
+            background: #181a1c;
+            padding: 16px 10px;
+            box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        h1 {
+            font-family: "Impact", "Arial Black", sans-serif;
+            color: #ff5500;
+            text-shadow: 2px 2px 0px #ffd000, 4px 4px 0px #000000;
+            letter-spacing: 2px;
+            margin: 0 0 6px 0;
+            font-size: 38px;
+            text-transform: uppercase;
+        }
+
+        .tagline {
+            color: #ff8800;
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        /* Marquee Bar */
+        .marquee-notice {
+            background: #0d0e0f;
+            color: #ff8800;
+            font-family: "Courier New", Courier, monospace;
+            padding: 5px;
+            border: 1px solid #3d424d;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            text-align: center;
+            margin-bottom: 16px;
+            background: #202328;
+            padding: 8px;
+            border: 1px solid #444a57;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-bar a {
+            margin: 0 8px;
+            color: #ffaa00;
+        }
+
+        .nav-bar span.divider {
+            color: #555;
+        }
+
+        /* Forum Tables */
+        table.forum-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #111;
+            background-color: #1a1c1e;
+            margin-bottom: 20px;
+            box-shadow: 3px 3px 0px #000000;
+        }
+
+        th.category-header {
+            background: linear-gradient(180deg, #3a3e47 0%, #1a1c1f 100%);
+            color: #ff9900;
+            text-align: left;
+            padding: 10px 12px;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            font-weight: bold;
+            border-bottom: 2px solid #ff6600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 1px #000;
+        }
+
+        th.table-sub-header {
+            background-color: #22252b;
+            color: #8a93a0;
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            padding: 5px 10px;
+            border-bottom: 1px solid #333742;
+            text-align: left;
+        }
+
+        tr.forum-row:nth-child(odd) {
+            background-color: #1c1e22;
+        }
+
+        tr.forum-row:nth-child(even) {
+            background-color: #22252a;
+        }
+
+        tr.forum-row:hover {
+            background-color: #2a2e35;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #121315;
+            vertical-align: middle;
+        }
+
+        /* Status Icons */
+        td.forum-icon {
+            width: 40px;
+            text-align: center;
+        }
+
+        .status-icon {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            background: radial-gradient(circle at 30% 30%, #ffbb00, #ff5500);
+            border-radius: 4px;
+            border: 1px solid #000;
+            box-shadow: inset 1px 1px 2px #fff, 1px 1px 2px #000;
+        }
+
+        .status-icon.old {
+            background: radial-gradient(circle at 30% 30%, #777, #333);
+            box-shadow: inset 1px 1px 1px #aaa, 1px 1px 2px #000;
+        }
+
+        /* Forum Details */
+        .forum-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .forum-description {
+            color: #a0a6b0;
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .forum-moderators {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            color: #707780;
+            margin-top: 4px;
+        }
+
+        td.stats-cell {
+            width: 100px;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            color: #c0c4cc;
+            line-height: 1.4;
+        }
+
+        td.last-post-cell {
+            width: 220px;
+            font-size: 11px;
+            color: #8a93a0;
+            line-height: 1.4;
+        }
+
+        .last-post-title {
+            font-weight: bold;
+            color: #dcdcdc;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 210px;
+        }
+
+        /* User Ranks */
+        .online-admin {
+            color: #ff4400;
+            font-weight: bold;
+        }
+
+        .online-mod {
+            color: #00ccff;
+            font-weight: bold;
+        }
+
+        .online-user {
+            color: #ffaa00;
+            font-weight: bold;
+        }
+
+        /* Stats & Info Boxes */
+        .info-box {
+            background: #1c1e22;
+            border: 1px solid #3a3f4a;
+            padding: 12px;
+            margin-top: 18px;
+            font-size: 12px;
+            box-shadow: 2px 2px 0px #000;
+        }
+
+        .info-box h3 {
+            margin: 0 0 8px 0;
+            color: #ff9900;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #333742;
+            padding-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .legend {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px dashed #333;
+            color: #888;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px dashed #444;
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            color: #777;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER SECTION -->
+    <div class="header-container">
+        <h1>RedWall Forum</h1>
+        <div class="tagline">[ PHOENIX // ONLINE COMMUNITY ]</div>
+        <div class="marquee-notice">
+            <marquee scrollamount="3" behavior="scroll" direction="left">
+                *** NEWS: Welcome to the board! // Please welcome our newest moderator: <span class="online-mod">popbob</span>! // Keep signatures under 500px wide! ***
+            </marquee>
+        </div>
+    </div>
+
+    <!-- NAVIGATION -->
+    <div class="nav-bar">
+        <a href="#">Register</a> <span class="divider">|</span>
+        <a href="#">Log In</a> <span class="divider">|</span>
+        <a href="#">Search</a> <span class="divider">|</span>
+        <a href="#">Member List</a> <span class="divider">|</span>
+        <a href="#">FAQ</a> <span class="divider">|</span>
+        <a href="#">User Groups</a>
+    </div>
+
+    <!-- CATEGORY 1: MAIN LOBBY -->
+    <table class="forum-table">
+        <thead>
+            <tr>
+                <th colspan="4" class="category-header">Main Lobby</th>
+            </tr>
+            <tr>
+                <th class="table-sub-header" style="width: 40px;"></th>
+                <th class="table-sub-header">Forum</th>
+                <th class="table-sub-header" style="text-align: center;">Stats</th>
+                <th class="table-sub-header">Last Post</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="forum-row">
+                <td class="forum-icon">
+                    <span class="status-icon" title="New Posts"></span>
+                </td>
+                <td>
+                    <div class="forum-title"><a href="#">News &amp; Announcements</a></div>
+                    <div class="forum-description">Official updates regarding the board, server upgrades, and community events. Read this first!</div>
+                    <div class="forum-moderators">Moderators: <a href="#" class="online-admin">Admin_Dan</a></div>
+                </td>
+                <td class="stats-cell">
+                    <strong>142</strong> Threads<br>
+                    <strong>1,894</strong> Posts
+                </td>
+                <td class="last-post-cell">
+                    <a href="#" class="last-post-title">Forum Rules Update (v2.4)</a>
+                    by <a href="#" class="online-admin">Admin_Dan</a><br>
+                    Today, 11:24 AM
+                </td>
+            </tr>
+            <tr class="forum-row">
+                <td class="forum-icon">
+                    <span class="status-icon" title="New Posts"></span>
+                </td>
+                <td>
+                    <div class="forum-title"><a href="#">General Chat</a></div>
+                    <div class="forum-description">Talk about anything and everything here. Grab a Mountain Dew and pull up a chair.</div>
+                    <div class="forum-moderators">Moderators: <a href="#" class="online-mod">popbob</a>, <a href="#" class="online-mod">Vortex</a></div>
+                </td>
+                <td class="stats-cell">
+                    <strong>5,431</strong> Threads<br>
+                    <strong>84,201</strong> Posts
+                </td>
+                <td class="last-post-cell">
+                    <a href="#" class="last-post-title">What song are you listening to right now?</a>
+                    by <a href="#" class="online-user">popbob</a><br>
+                    Today, 01:15 PM
+                </td>
+            </tr>
+            <tr class="forum-row">
+                <td class="forum-icon">
+                    <span class="status-icon old" title="No New Posts"></span>
+                </td>
+                <td>
+                    <div class="forum-title"><a href="#">Introductions</a></div>
+                    <div class="forum-description">New to the Den? Drop a thread here and introduce yourself to the squad!</div>
+                </td>
+                <td class="stats-cell">
+                    <strong>932</strong> Threads<br>
+                    <strong>6,543</strong> Posts
+                </td>
+                <td class="last-post-cell">
+                    <a href="#" class="last-post-title">Hey guys im new from MySpace!!</a>
+                    by <a href="#">RetroCoder</a><br>
+                    Yesterday, 10:45 PM
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- CATEGORY 2: CREATIVE & PROJECTS -->
+    <table class="forum-table">
+        <thead>
+            <tr>
+                <th colspan="4" class="category-header">The Creative Hub</th>
+            </tr>
+            <tr>
+                <th class="table-sub-header" style="width: 40px;"></th>
+                <th class="table-sub-header">Forum</th>
+                <th class="table-sub-header" style="text-align: center;">Stats</th>
+                <th class="table-sub-header">Last Post</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="forum-row">
+                <td class="forum-icon">
+                    <span class="status-icon" title="New Posts"></span>
+                </td>
+                <td>
+                    <div class="forum-title"><a href="#">Web Design &amp; Graphics</a></div>
+                    <div class="forum-description">Show off your custom forum banners, userbars, HTML/CSS tweaks, and retro themes.</div>
+                    <div class="forum-moderators">Moderators: <a href="#" class="online-mod">Vortex</a></div>
+                </td>
+                <td class="stats-cell">
+                    <strong>612</strong> Threads<br>
+                    <strong>7,120</strong> Posts
+                </td>
+                <td class="last-post-cell">
+                    <a href="#" class="last-post-title">[Showcase] Dark Retro Forum Theme</a>
+                    by <a href="#" class="online-mod">Vortex</a><br>
+                    Today, 08:30 AM
+                </td>
+            </tr>
+            <tr class="forum-row">
+                <td class="forum-icon">
+                    <span class="status-icon old" title="No New Posts"></span>
+                </td>
+                <td>
+                    <div class="forum-title"><a href="#">Projects &amp; Code</a></div>
+                    <div class="forum-description">Share your software projects, retro game mods, extensions, and scripts.</div>
+                </td>
+                <td class="stats-cell">
+                    <strong>284</strong> Threads<br>
+                    <strong>3,410</strong> Posts
+                </td>
+                <td class="last-post-cell">
+                    <a href="#" class="last-post-title">Custom Shader Script v1.0</a>
+                    by <a href="#">PixelCraft</a><br>
+                    Oct 26, 2026, 04:12 PM
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- WHOS ONLINE / STATS BOX -->
+    <div class="info-box">
+        <h3>Who's Online</h3>
+        <div>
+            In total there are <strong>24</strong> users online :: 4 Registered, 1 Hidden and 19 Guests.<br>
+            Most users ever online was <strong>312</strong> on Aug 14, 2026, 09:18 PM.<br><br>
+            Registered Users: <a href="#" class="online-admin">Admin_Dan</a>, <a href="#" class="online-mod">popbob</a>, <a href="#" class="online-mod">Vortex</a>, <a href="#" class="online-user">RetroCoder</a>
+        </div>
+        <div class="legend">
+            Legend: [<a href="#" class="online-admin">Administrator</a>] [<a href="#" class="online-mod">Moderator</a>] [<a href="#" class="online-user">Registered Member</a>]
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        Powered by vBulletin&trade; Version 3.8.4<br>
+        Copyright &copy;2000 - 2026, RedWall Media Group. All rights reserved.<br>
+        Page generated in 0.0341 seconds with 9 queries.
+    </div>
+
+</body>
+
+</html>

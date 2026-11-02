@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Phoenix</title>
+    <!--CSS-->
+    <style>
+        body {
+            max-width: 1280px;
+            place-items: center;
+            font-family: Arial, Helvetica, sans-serif;
+            height: auto;
+            width: 100%;
+        }
+
+        #header {
+            text-align: center;
+            background: linear-gradient(to bottom, #ffd7a2 0%, #f7d387 35%, #ecc886 70%, #d6b06a 100%);
+            border-color: black;
+            border: 1px solid;
+            padding: 12px;
+        }
+
+        #title-red {
+            max-width: 128px;
+            max-height: 128px;
+            color: red;
+            font-size: large;
+            font-weight: bold;
+            float: left;
+            margin-right: 16px;
+            text-decoration: none;
+            margin-top: 8px;
+        }
+
+        #version-tag {
+            max-width: 128px;
+            max-height: 128px;
+            font-size: small;
+        }
+
+        #banner {
+            text-align: left;
+        }
+
+        #signup-a {
+            text-decoration: none;
+            display: inline-block;
+            padding: 4px 12px;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            font-weight: lighter;
+            color: #0e0d0d;
+            border: 1px solid #801c1c;
+            border-radius: 0px;
+            cursor: pointer;
+            /* Hard-stop dual color gradient typical of the 2010s style */
+            background: linear-gradient(to bottom, #de544f 0%, #ffc7b6 50%, #df5138 50.1%, #da4c39 100%);
+            background: linear-gradient(to bottom, #ffbfb6 0%, #e67865 50%, #e34732 50.1%, #e35532 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+            margin-bottom: 8px;
+            margin-top: 8px;
+        }
+
+        #button-list {
+            display: flex;
+            flex-direction: row;
+            list-style: none;
+            box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+            padding: 0px;
+        }
+
+        #nav {
+            display: inline-block;
+            padding: 12px 24px;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+            color: #ffffff;
+            text-decoration: none;
+            text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
+
+            /* Classic 2010s top-to-bottom gradient */
+            background: #4a90e2;
+            /* Fallback for old browsers */
+            background: -webkit-linear-gradient(top, #63b8ee 0%, #468ccf 100%);
+            background: -moz-linear-gradient(top, #63b8ee 0%, #468ccf 100%);
+            background: -ms-linear-gradient(top, #63b8ee 0%, #468ccf 100%);
+            background: -o-linear-gradient(top, #63b8ee 0%, #468ccf 100%);
+            background: linear-gradient(to bottom, #63b8ee 0%, #468ccf 100%);
+
+            /*border: 1px solid #3b73a9;*/
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                0 2px 4px rgba(0, 0, 0, 0.2);
+
+            transition: background 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #home {
+            text-align: left;
+            padding: 4px;
+            width: 900px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #greetings-txt {
+            font-weight: lighter;
+        }
+
+        #acc-card {
+            border: 1px solid;
+            border-color: rgb(2, 59, 112);
+            max-width: 400px;
+        }
+
+        #card-span {
+            margin-left: 16px;
+            margin-top: 16px;
+            margin-bottom: 12px;
+        }
+
+        #card-input {
+            margin-left: 16px;
+            margin-top: 16px;
+            margin-bottom: 12px;
+        }
+
+        #card-biginput {
+            margin-left: 85px;
+            margin-bottom: 12px;
+        }
+
+        #actions {
+            margin-left: 140px;
+            padding: 4px;
+        }
+
+        #actions-btn {
+            border: 1px solid;
+            border-color: rgb(104, 104, 104);
+            background-color: rgb(235, 231, 224);
+            padding: 1px;
+            margin-right: 16px;
+            text-decoration: none;
+            color: gray;
+        }
+
+        #actions-btn:hover {
+            border: 1px solid;
+            border-color: rgb(104, 104, 104);
+            background-color: rgb(245, 233, 212);
+            padding: 1px;
+            margin-right: 16px;
+            text-decoration: none;
+            color: gray;
+        }
+
+        #reset-p-word {
+            padding: 6px;
+            margin-top: 6px;
+        }
+
+        #people {
+            padding-top: 8px;
+            background-color: rgb(226, 226, 228);
+            float: center;
+            max-width: 400px;
+            max-height: 200px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            padding: 4px;
+        }
+
+        #people-list {
+            display: grid;
+            grid-template-columns: 100px 100px 100px;
+            justify-content: space-between;
+        }
+
+        #special {
+            margin-bottom: 4px;
+        }
+
+        #footer {
+            font-size: 12px;
+            text-align: center;
+        }
+
+        #line {
+            border: 0.1px solid;
+            border-color: rgb(94, 92, 92);
+            margin-top: 16px;
+        }
+
+        #footer-txt {
+            margin-top: 8px;
+        }
+
+        #footer-list {
+            list-style: none;
+            display: flex;
+            flex-direction: row;
+            gap: 12px;
+            text-align: center;
+        }
+
+        #nav:hover {
+            background: -webkit-linear-gradient(top, #77c4f6 0%, #5298df 100%);
+            background: linear-gradient(to bottom, #77c4f6 0%, #5298df 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6),
+                0 3px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        #signup-a:hover {
+            background: linear-gradient(to bottom, #f8c8c5 0%, #ffa4a4 50%, #f57a55 50.1%, #e7724e 100%);
+        }
+
+        #user-inf {
+            font-size: xx-small;
+        }
+
+        #anti-robot-msg {
+            background-color: black;
+            color: #FFF;
+            font-weight: 200px;
+            font-size: small;
+            padding: 4px;
+            border-radius: 0px;
+            max-width: 15vh;
+            max-height: 32px;
+            text-align: right;
+            box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+        }
+
+        #anti-robot-img {
+            width: 48px;
+            height: 32px;
+            float: left;
+        }
+
+        #alert {
+            background-color: rgb(190, 42, 16);
+            border: 2px solid #0e0d0d;
+            padding: 8px;
+            font-size: small;
+            color: #FFF;
+            box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+        }
+
+        .clock-container {
+            font-size: small;
+        }
+
+        .language-switcher {
+            display: block;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+
+        .language-switcher a {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 6px;
+            margin-right: 4px;
+            border: 1px solid #ccc;
+            background-color: #f5f5f5;
+            color: #333;
+            text-decoration: none;
+            border-radius: 0px;
+        }
+
+        .language-switcher a:hover {
+            background-color: #e5e5e5;
+            border-color: #999;
+            box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+        }
+
+        .language-switcher img {
+            vertical-align: middle;
+        }
+
+        #header-input:focus {
+            outline: none;
+        }
+
+        .gtranslate_wrapper:focus {
+            outline: none;
+            border-radius: 0px;
+        }
+
+        .gtranslate_wrapper:active {
+            outline: none;
+        }
+
+        .gtranslate_wrapper:hover {
+            outline: none;
+        }
+
+        .gtranslate_wrapper:focus-visible {
+            outline: none;
+            border-radius: 0px;
+        }
+
+        #places img:hover {
+            box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+        }
+
+        #debug-btn {
+            margin-bottom: 8px;
+        }
+
+        .gtranslate_wrapper {
+            margin-top: 8px;
+        }
+
+        #browse-people {
+            margin-left: 8px;
+        }
+
+        #people {
+            margin-top: 16px;
+        }
+
+        #message {
+            margin-top: 8px; border: 1px solid; border-color: black;
+        }
+        #account-txt {
+            padding: 8px;
+        }
+        #account-span {
+            padding: 4px;
+        }
+        #line-divider{
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+            margin: 8px;
+            background: #000;
+            height: 1px;
+        }
+        #rate-stars-btn{
+            background: linear-gradient(to bottom, #dcde4f 0%, #fffeb6 50%, #dfd438 50.1%, #daca39 100%);
+            background: linear-gradient(to bottom, #fff4b6 0%, #e6e465 50%, #e3e032 50.1%, #e3e032 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+            color: #000;
+            border-top: 1px solid #000;
+            border-left: 1px solid #000;
+            border-right: 1px solid #000;
+            border-bottom: 1px solid #000;
+            text-decoration: none;
+        }
+        #rate-stars-btn:hover{
+            background: linear-gradient(to bottom, #f8f5c5 0%, #fff1a4 50%, #f5d055 50.1%, #e7e44e 100%);
+        }
+        #friend-btn{
+            background: linear-gradient(to bottom, #4fde4f 0%, #c2ffb6 50%, #46df38 50.1%, #39da39 100%);
+            background: linear-gradient(to bottom, #c5ffb6 0%, #74e665 50%, #55e332 50.1%, #47e332 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+            color: #000;
+            border-top: 1px solid #000;
+            border-left: 1px solid #000;
+            border-right: 1px solid #000;
+            border-bottom: 1px solid #000;
+            text-decoration: none;
+        }
+        #friend-btn:hover{
+            background: linear-gradient(to bottom, #cff8c5 0%, #b9ffa4 50%, #82f555 50.1%, #4ee762 100%);
+        }
+        #report-btn{
+            background: linear-gradient(to bottom, #de4f4f 0%, #ffb6b6 50%, #df3838 50.1%, #da3939 100%);
+            background: linear-gradient(to bottom, #ffb6b6 0%, #e66565 50%, #e33232 50.1%, #e33232 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+            color: #000;
+            border-top: 1px solid #000;
+            border-left: 1px solid #000;
+            border-right: 1px solid #000;
+            border-bottom: 1px solid #000;
+            text-decoration: none;
+        }
+        #report-btn:hover{
+            background: linear-gradient(to bottom, #f8c5c5 0%, #ffa4a4 50%, #f55555 50.1%, #e74e4e 100%);
+        }
+        #edit-acc-btn{
+            background: linear-gradient(to bottom, #e0dfdf 0%, #fff6f6 50%, #dfd0d0 50.1%, #dbc9c9 100%);
+            background: linear-gradient(to bottom, #fff0f0 0%, #ddc8c8 50%, #dbc1c1 50.1%, #d6bebe 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+            color: #000;
+            border-top: 1px solid #000;
+            border-left: 1px solid #000;
+            border-right: 1px solid #000;
+            border-bottom: 1px solid #000;
+            text-decoration: none;
+        }
+        #edit-acc-btn:hover{
+            background: linear-gradient(to bottom, #fff0f0 0%, #ffe6e6 50%, #fae0e0 50.1%, #e7d5d5 100%);
+        }
+        #msg-acc-btn{
+            background: linear-gradient(to bottom, #4f9ede 0%, #b6d8ff 50%, #386ddf 50.1%, #3992da 100%);
+            background: linear-gradient(to bottom, #b6dcff 0%, #65c8e6 50%, #32bae3 50.1%, #32c0e3 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+            color: #000;
+            border-top: 1px solid #000;
+            border-left: 1px solid #000;
+            border-right: 1px solid #000;
+            border-bottom: 1px solid #000;
+            text-decoration: none;
+        }
+        #msg-acc-btn:hover{
+            background: linear-gradient(to bottom, #c5eaf8 0%, #a4d6ff 50%, #55baf5 50.1%, #4ec8e7 100%);
+        }
+        #account-txt{
+            background: linear-gradient(to bottom, #e0dfdf 0%, #fff6f6 50%, #dfd0d0 50.1%, #dbc9c9 100%);
+            background: linear-gradient(to bottom, #fff0f0 0%, #ddc8c8 50%, #dbc1c1 50.1%, #d6bebe 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2); margin-left: 8px;
+            border: 1px solid #000;
+            max-width: fit-content;
+        }
+        #account-txt:hover{
+            background: linear-gradient(to bottom, #fff0f0 0%, #ffe6e6 50%, #fae0e0 50.1%, #e7d5d5 100%);
+        }
+        #btn-group{
+            display: flex;
+            flex-direction: row;
+            gap: 1px;
+            margin-bottom: 4px;
+            justify-content: space-between;
+        }
+        #line-divider-height{
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+            margin: 2px;
+            background: #000;
+            height: 16spx;
+            width: 1px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="header">
+        <div id="alert">Alert: Test Alert<p id="version-tag">V 0.1.2 – Indev debug</p><button>Debug Tools</button>
+            <button id="debug-btn">Debug Mode</button>
+            <div class="language-switcher">
+                <a href="/en" class="flag-icon" title="English">
+                    <img src="https://flagcdn.com/us.svg" alt="English" width="24" height="16">
+                    <span>EN</span>
+                </a>
+                <a href="/de" class="flag-icon" title="Deutsch">
+                    <img src="https://flagcdn.com/de.svg" alt="Deutsch" width="24" height="16">
+                    <span>DE</span>
+                </a>
+                <a href="/es" class="flag-icon" title="Español">
+                    <img src="https://flagcdn.com/es.svg" alt="Español" width="24" height="16">
+                    <span>ES</span>
+                </a>
+            </div>
+            <div class="gtranslate_wrapper"></div>
+            <script>
+                window.gtranslateSettings = {
+                    "default_language": "en",
+                    "languages": ["en", "es", "de", "fr", "it", "pt", "zh-CN"],
+                    "wrapper_selector": ".gtranslate_wrapper"
+                }
+            </script>
+            <script src="https://cdn.gtranslate.net/widgets/latest/dropdown.js" defer></script>
+        </div>
+        <div id="upper-header">
+            <a href="home.html" id="title-red">Phoenix</a>
+            <div id="banner">
+                <a href="signup.html" id="signup-a">sign up</a>
+                <a href="signup.html" id="signup-a">login</a>
+                <div class="clock-container">
+                    <div id="date">Loading date...</div>
+                    <div id="time">00:00:00</div>
+                </div>
+
+                <script>
+                    function updateClock() {
+                        const now = new Date();
+
+                        // 1. Format the Date (e.g., "Monday, October 26, 2026")
+                        const dateOptions = {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        };
+                        const formattedDate = now.toLocaleDateString('en-UK', dateOptions);
+
+                        // 2. Format the Time (e.g., "14:05:02" or "2:05:02 PM")
+                        const timeOptions = {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: false // Change to false for 24-hour format
+                        };
+                        const formattedTime = now.toLocaleTimeString('en-UK', timeOptions);
+
+                        // 3. Inject into HTML elements
+                        document.getElementById('date').textContent = formattedDate;
+                        document.getElementById('time').textContent = formattedTime;
+                    }
+
+                    // Run the clock immediately on load
+                    updateClock();
+
+                    // Update the clock every 1000 milliseconds (1 second)
+                    setInterval(updateClock, 1000);</script>
+            </div>
+
+            <p>Where do you want to go?</p>
+        </div>
+        <ul id="button-list">
+            <li>
+                <a href="home.html" id="nav">Home</a>
+            </li>
+            <li>
+                <a href="browse.html" id="nav">Browse</a>
+            </li>
+            <li>
+                <a href="play.html" id="nav">Multiplayer</a>
+            </li>
+            <li>
+                <a href="forum.html" id="nav">Forum</a>
+            </li>
+            <li>
+                <a href="info.html" id="nav">Info</a>
+            </li>
+            <li>
+                <a href="games.html" id="nav">Games</a>
+            </li>
+            <li>
+                <a href="events.html" id="nav">Events</a>
+            </li>
+            <li>
+                <a href="updates.html" id="nav">Updates</a>
+            </li>
+        </ul>
+        <input type="text" placeholder="Search" id="header-input">
+        <button>Submit</button>
+    </div>
+    <div id="home">
+        <p>Ban-page</p>
+            <div id="message">
+<p style="margin-left: 8px;">Username:</p>
+<div id="account-txt">thePROuser</div>
+ <div id="line-divider">.</div>
+<span id="account-span">Account created:</span>
+<div id="account-txt">1 November 2026, 7:30 PM</div>
+ <div id="line-divider">.</div>
+<span id="account-span">Account ID:</span>
+<div id="account-txt">1</div>
+ <div id="line-divider">.</div>
+<span id="account-span">Ban Date:</span>
+<div id="account-txt">2 November 2026, 3:20 PM</div>
+ <div id="line-divider">.</div>
+<span id="account-span">Ban Duration:</span>
+<div id="account-txt">3 days</div>
+ <div id="line-divider">.</div>
+<span id="account-span">Ban Reason:</span>
+<div id="account-txt" style="margin-bottom: 8px;">ONLINE DATING</div>
+<div id="acc-card">
+            <span id="card-span">Username or E-Mail:</span>
+            <input id="card-input">
+            <span id="card-span">Password:</span>
+            <input id="card-biginput">
+            <div id="actions">Actions:
+                <a href="login.html" id="actions-btn">Log
+                    In!</a>
+                <a href="signup.html" id="actions-btn">Sign Up</a>
+            </div>
+            <a href="resetpassword.html" id="reset-p-word">Reset password</a>
+        </div>
+<span id="account-span">Ban Buttons:</span>
+<div id="btn-group"><a href="" id="rate-stars-btn">RATE 5☆</a>
+<div id="line-divider-height"></div>
+<a href="" id="friend-btn">APPEAL BAN</a>
+<div id="line-divider-height"></div>
+<a href="" id="report-btn">REPORT BAN</a>
+<div id="line-divider-height"></div>
+<a href="" id="edit-acc-btn">EDIT BAN</a>
+<div id="line-divider-height"></div>
+<div id="line-divider-height"></div>
+<a href="" id="msg-acc-btn">LOGOUT</a></div>
+    </div>
+
+        <div id="footer">
+            <div>.</div>
+            <div id="line"></div>
+            <div>.</div>
+            <span id="footer-txt">Phoenix © 2026 all rights reserved</span>
+            <div>.</div>
+            <ul id="footer-list">
+                <li>
+                    <a href="privacy.html">Privacy Policy I</a>
+                </li>
+                <li>
+                    <a href="contact.html">Contact Us I</a>
+                </li>
+                <li>
+                    <a href="info.html">About Us</a>
+                </li>
+            </ul>
+            <br>
+            <span style="float: left;">Made with HTML</span>
+            <div>.</div>
+            <div>
+                <p id="anti-robot-msg"><img id="anti-robot-img" src="anti-robot.png" alt="anti-robot.png">Robots Are
+                    Banned</p>
+            </div>
+            <span>by using this website you accept to the</span>
+            <div>.</div>
+            <a href="terms.html">Terms and conditions</a>
+        </div>
+
+    </div>
+</body>
+
+</html>
